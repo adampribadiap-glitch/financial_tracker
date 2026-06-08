@@ -762,38 +762,6 @@ select option{background:#1a1a12;color:var(--text);}
   </div>
 </div>
 
-<script>
-function mobileSwitchView(v, btn){
-  // find matching sidebar nav item and trigger
-  const navItems = document.querySelectorAll('.nav-item');
-  navItems.forEach(el => {
-    if(el.getAttribute('onclick') && el.getAttribute('onclick').includes("'"+v+"'")){
-      switchView(v, el);
-    }
-  });
-  // update bottom nav active
-  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-}
-function mobileSwitchViewMenu(v){
-  const navItems = document.querySelectorAll('.nav-item');
-  navItems.forEach(el => {
-    if(el.getAttribute('onclick') && el.getAttribute('onclick').includes("'"+v+"'")){
-      switchView(v, el);
-    }
-  });
-  closeModal('mobile-menu');
-  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
-}
-function showMobileMenu(){
-  document.getElementById('mobile-menu').classList.add('open');
-}
-// close mobile-menu on backdrop click
-document.getElementById('mobile-menu').addEventListener('click', e=>{
-  if(e.target.id==='mobile-menu') e.target.classList.remove('open');
-});
-</script>
-
 
 <script>
 const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -956,9 +924,27 @@ function openModal(type,editId){
   document.getElementById('modal-'+type).classList.add('open');
 }
 function closeModal(t){document.getElementById('modal-'+t).classList.remove('open');}
-['modal-tx','modal-trade','modal-deposit','modal-wd','modal-savings'].forEach(id=>{
-  document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id)e.target.classList.remove('open');});
+['modal-tx','modal-trade','modal-deposit','modal-wd','modal-savings','mobile-menu'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener('click',e=>{if(e.target.id===id)e.target.classList.remove('open');});
 });
+
+// ===== MOBILE NAV =====
+function mobileSwitchView(v,btn){
+  document.querySelectorAll('.nav-item').forEach(el=>{
+    if(el.getAttribute('onclick')&&el.getAttribute('onclick').includes("'"+v+"'")){switchView(v,el);}
+  });
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+}
+function mobileSwitchViewMenu(v){
+  document.querySelectorAll('.nav-item').forEach(el=>{
+    if(el.getAttribute('onclick')&&el.getAttribute('onclick').includes("'"+v+"'")){switchView(v,el);}
+  });
+  closeModal('mobile-menu');
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
+}
+function showMobileMenu(){document.getElementById('mobile-menu').classList.add('open');}
 
 function populateAccountsSel(selId,selectedId){
   const sel=document.getElementById(selId);
