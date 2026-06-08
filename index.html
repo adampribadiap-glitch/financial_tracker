@@ -282,6 +282,145 @@ select option{background:#1a1a12;color:var(--text);}
 /* DIVIDER */
 .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .section-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  /* Hide desktop sidebar */
+  .sidebar { display: none; }
+
+  /* Main takes full width */
+  .layout { display: block; }
+  .main { width: 100%; }
+
+  /* Topbar mobile */
+  .topbar {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .page-title { font-size: 14px; }
+  .page-sub { font-size: 10px; }
+  .topbar-right { gap: 6px; width: 100%; }
+  .month-nav { flex: 1; }
+  #monthLabel { font-size: 11px; min-width: 90px; }
+  #mainBtn { font-size: 11px; padding: 7px 12px; }
+
+  /* Views */
+  .view { padding: 14px 14px 100px; }
+
+  /* Stat grids → 2 col on mobile */
+  .cols-4, .cols-5 { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .cols-3 { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .cols-2 { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .stats-row { margin-bottom: 12px; }
+
+  .stat-card { padding: 12px 14px; }
+  .stat-val { font-size: 15px; }
+  .stat-label { font-size: 9px; }
+
+  /* Charts stack vertically */
+  .chart-grid { grid-template-columns: 1fr; gap: 10px; }
+
+  /* Budget grid */
+  .budget-list { grid-template-columns: 1fr; }
+
+  /* Savings grid */
+  .savings-grid { grid-template-columns: 1fr; }
+
+  /* Goals inline input */
+  .goal-input-row input { width: 130px; }
+
+  /* Card */
+  .card { padding: 14px 14px; }
+  .card-title { font-size: 11px; flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  /* TX items */
+  .tx-item { gap: 8px; padding: 10px 0; }
+  .tx-name { font-size: 12px; }
+  .tx-amount { font-size: 11px; }
+  .icon-btn { font-size: 12px; padding: 4px; }
+
+  /* Trade table → horizontal scroll */
+  .trade-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .trade-table { font-size: 10px; }
+  .trade-table th, .trade-table td { padding: 7px 7px; }
+
+  /* Modal full screen on mobile */
+  .modal {
+    width: 100% !important;
+    max-width: 100%;
+    max-height: 92vh;
+    border-radius: 20px 20px 0 0;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    margin: 0;
+    padding: 20px 18px 32px;
+  }
+  .modal-bg { align-items: flex-end; }
+  .form-grid.g2 { grid-template-columns: 1fr; }
+  .form-grid.g3 { grid-template-columns: 1fr 1fr; }
+  .form-grid.g4 { grid-template-columns: 1fr 1fr; }
+
+  /* Budget inputs */
+  #budget-inputs { grid-template-columns: 1fr 1fr !important; }
+
+  /* Flow list table */
+  #flow-list .trade-table { font-size: 10px; }
+
+  /* Form cards */
+  .form-card { padding: 14px; }
+  .form-card > div[style*="grid-template-columns:1fr 1fr 1fr auto"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Trade log action buttons */
+  .row-actions { flex-direction: column; gap: 2px; }
+
+  /* Stat card trade log */
+  #view-trading .stats-row.cols-4 { grid-template-columns: repeat(2,1fr); }
+}
+
+/* ===== BOTTOM NAV (mobile only) ===== */
+.bottom-nav {
+  display: none;
+}
+@media (max-width: 768px) {
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10,10,8,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  }
+  .bn-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 2px;
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 9px;
+    font-weight: 500;
+    transition: all .15s;
+    border: none;
+    background: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .bn-item .bn-icon { font-size: 18px; line-height: 1; }
+  .bn-item.active { color: var(--gold2); }
+  .bn-item.active .bn-icon { filter: drop-shadow(0 0 4px rgba(212,175,55,0.5)); }
+
+  /* Export button mobile — hide from sidebar footer since sidebar is hidden */
+  .sidebar-footer { display: none; }
+}
+
 </style>
 </head>
 <body>
@@ -594,8 +733,69 @@ select option{background:#1a1a12;color:var(--text);}
   </div>
 </div>
 
+<!-- BOTTOM NAV (mobile) -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bn-item active" onclick="mobileSwitchView('dashboard',this)"><span class="bn-icon">📊</span>Dashboard</button>
+  <button class="bn-item" onclick="mobileSwitchView('transactions',this)"><span class="bn-icon">📋</span>Transaksi</button>
+  <button class="bn-item" onclick="mobileSwitchView('trading',this)"><span class="bn-icon">📈</span>Trading</button>
+  <button class="bn-item" onclick="mobileSwitchView('savings',this)"><span class="bn-icon">🏦</span>Rekening</button>
+  <button class="bn-item" onclick="showMobileMenu()"><span class="bn-icon">☰</span>Menu</button>
+</nav>
+
+<!-- MOBILE MENU DRAWER -->
+<div class="modal-bg" id="mobile-menu">
+  <div class="modal" style="padding:20px 18px 32px;">
+    <div class="modal-title" style="margin-bottom:16px;">Menu</div>
+    <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:20px;">
+      <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="mobileSwitchViewMenu('budget')">🎯 Anggaran</button>
+      <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="mobileSwitchViewMenu('goals')">🏆 Target Tabungan</button>
+      <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="mobileSwitchViewMenu('tradingstats')">📉 Trading Stats</button>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;flex-direction:column;gap:8px;">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Data</div>
+      <button class="btn btn-primary" onclick="exportData();closeModal('mobile-menu')">⬇ Export Data</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('import-input').click();closeModal('mobile-menu')">⬆ Import Data</button>
+    </div>
+    <div class="modal-footer" style="padding-top:14px;margin-top:14px;">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('mobile-menu')">Tutup</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// ===== CONSTANTS =====
+function mobileSwitchView(v, btn){
+  // find matching sidebar nav item and trigger
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(el => {
+    if(el.getAttribute('onclick') && el.getAttribute('onclick').includes("'"+v+"'")){
+      switchView(v, el);
+    }
+  });
+  // update bottom nav active
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+function mobileSwitchViewMenu(v){
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(el => {
+    if(el.getAttribute('onclick') && el.getAttribute('onclick').includes("'"+v+"'")){
+      switchView(v, el);
+    }
+  });
+  closeModal('mobile-menu');
+  document.querySelectorAll('.bn-item').forEach(b => b.classList.remove('active'));
+}
+function showMobileMenu(){
+  document.getElementById('mobile-menu').classList.add('open');
+}
+// close mobile-menu on backdrop click
+document.getElementById('mobile-menu').addEventListener('click', e=>{
+  if(e.target.id==='mobile-menu') e.target.classList.remove('open');
+});
+</script>
+
+
+<script>
 const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const CATS_EXP=['Makanan','Transport','Belanja','Hiburan','Tagihan','Cicilan','Kesehatan','Pendidikan','Lainnya'];
 const CATS_INC=['Gaji','Freelance','Investasi','Hadiah','Lainnya'];
