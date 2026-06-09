@@ -925,7 +925,8 @@ const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus'
 const CATS_EXP=['Makanan','Transport','Belanja','Hiburan','Tagihan','Cicilan','Kesehatan','Pendidikan','Lainnya'];
 const CATS_INC=['Gaji','Freelance','Trading','Investasi','Hadiah','Lainnya'];
 const EMO={Gaji:'💼',Freelance:'💻',Trading:'📈',Investasi:'💹',Hadiah:'🎁',Makanan:'🍜',Transport:'🚗',Belanja:'🛍️',Hiburan:'🎮',Tagihan:'💡',Cicilan:'💳',Kesehatan:'💊',Pendidikan:'📚',Lainnya:'📦'};
-const PAL=['#d4af37','#e53e3e','#48bb78','#63b3ed','#b794f4','#4fd1c5','#f6ad55','#fc8181'];
+const PAL=['#3b82f6','#ef4444','#10b981','#f59e0b','#8b5cf6','#14b8a6','#f97316','#6b7280'];
+const CARD_THEMES=['atm-card-0','atm-card-1','atm-card-2','atm-card-3'];
 
 // ===== STATE =====
 let currentView='dashboard',currentType='income',txFilter='all',tradeFilter='all',flowFilter='all';
@@ -1027,15 +1028,14 @@ async function authSubmit(){
 async function onLoginSuccess(data){
   currentUser = data.user;
   userToken = data.access_token;
-  // Save token to localStorage
+  // Save token + expiry (1 hour from now)
+  const expiry = Date.now() + 60 * 60 * 1000;
   localStorage.setItem('ft_token', data.access_token);
   localStorage.setItem('ft_refresh', data.refresh_token||'');
   localStorage.setItem('ft_user', JSON.stringify(data.user));
-  // Update UI
+  localStorage.setItem('ft_expiry', String(expiry));
   updateUserUI();
-  // Hide auth screen, show app
   document.getElementById('auth-screen').classList.add('hidden');
-  // Pull user data
   await pullFromSupabase();
 }
 
@@ -1067,6 +1067,7 @@ async function authSignOut(){
   localStorage.removeItem('ft_token');
   localStorage.removeItem('ft_refresh');
   localStorage.removeItem('ft_user');
+  localStorage.removeItem('ft_expiry');
   // Reset data
   transactions=[];accounts=[];goals=[];trades=[];wdHistory=[];depositHistory=[];
   // Show auth screen
@@ -1091,9 +1092,11 @@ async function refreshToken(){
     const data = await r.json();
     userToken = data.access_token;
     currentUser = data.user;
+    const expiry = Date.now() + 60 * 60 * 1000;
     localStorage.setItem('ft_token', data.access_token);
     localStorage.setItem('ft_refresh', data.refresh_token||refresh);
     localStorage.setItem('ft_user', JSON.stringify(data.user));
+    localStorage.setItem('ft_expiry', String(expiry));
     return true;
   } catch(e){ return false; }
 }
@@ -1114,32 +1117,42 @@ function showForgotPassword(){
 async function checkSession(){
   const savedToken = localStorage.getItem('ft_token');
   const savedUser = localStorage.getItem('ft_user');
+  const savedExpiry = localStorage.getItem('ft_expiry');
+
   if(savedToken && savedUser){
-    userToken = savedToken;
-    currentUser = JSON.parse(savedUser);
-    // Verify token still valid
-    const r = await fetch(`${SB_URL}/auth/v1/user`,{
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+savedToken}
-    });
-    if(r.ok){
-      currentUser = await r.json();
+    // Check if token is still valid (not expired locally)
+    const now = Date.now();
+    const expiry = parseInt(savedExpiry||'0');
+
+    if(expiry > now){
+      // Token still valid locally, use it without network call
+      userToken = savedToken;
+      currentUser = JSON.parse(savedUser);
+      updateUserUI();
+      document.getElementById('auth-screen').classList.add('hidden');
+      // Schedule refresh 5 min before expiry
+      const msUntilRefresh = Math.max(0, expiry - now - 5*60*1000);
+      setTimeout(()=>refreshToken(), msUntilRefresh);
+      return true;
+    }
+
+    // Token might be expired, try refresh
+    const ok = await refreshToken();
+    if(ok){
       updateUserUI();
       document.getElementById('auth-screen').classList.add('hidden');
       return true;
-    } else {
-      // Try refresh
-      const ok = await refreshToken();
-      if(ok){
-        updateUserUI();
-        document.getElementById('auth-screen').classList.add('hidden');
-        return true;
-      }
     }
   }
-  // Show login
+  // No session, show login
   document.getElementById('auth-screen').classList.remove('hidden');
   return false;
 }
+
+// Auto-refresh every 50 minutes
+setInterval(async()=>{
+  if(userToken) await refreshToken();
+}, 50 * 60 * 1000);
 
 
 // Simple REST helpers
@@ -1947,13 +1960,15 @@ function renderAccounts(){
 // ===== BUDGET =====
 function renderBudget(txM){
   const inp=document.getElementById('budget-inputs');
-  inp.innerHTML=CATS_EXP.map(c=>`<div class="form-group" style="margin:0"><label>${EMO[c]} ${c}</label><input type="number" id="budget-${c}" value="${budgets[c]||0}"></div>`).join('');
+  const listEl=document.getElementById('budget-list');
+  if(!inp||!listEl) return;
+  inp.innerHTML=CATS_EXP.map(c=>`<div class="form-group" style="margin:0"><label>${EMO[c]||''} ${c}</label><input type="number" id="budget-${c}" value="${budgets[c]||0}"></div>`).join('');
   const catExp={};txM.filter(t=>t.type==='expense').forEach(t=>{catExp[t.cat]=(catExp[t.cat]||0)+t.amount;});
-  document.getElementById('budget-list').innerHTML=CATS_EXP.map(c=>{
+  listEl.innerHTML=CATS_EXP.map(c=>{
     const spent=catExp[c]||0,limit=budgets[c]||0;
     const pct=limit>0?Math.min(100,Math.round(spent/limit*100)):0;
-    const col=pct>90?'var(--red2)':pct>70?'var(--amber)':'var(--gold)';
-    return `<div class="budget-card"><div class="budget-top"><span class="budget-name">${EMO[c]} ${c}</span><span class="budget-pct" style="color:${col}">${pct}%</span></div><div class="progress"><div class="progress-bar" style="width:${pct}%;background:${col}"></div></div><div class="budget-nums"><span>${fmt(spent)}</span><span>${fmt(limit)}</span></div></div>`;
+    const col=pct>90?'var(--red)':pct>70?'var(--amber)':'var(--blue2)';
+    return `<div class="budget-card"><div class="budget-top"><span class="budget-name">${EMO[c]||''} ${c}</span><span class="budget-pct" style="color:${col}">${pct}%</span></div><div class="progress"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div><div class="budget-nums"><span>${fmt(spent)}</span><span>${fmt(limit)}</span></div></div>`;
   }).join('');
 }
 function saveBudgets(){
@@ -2335,7 +2350,6 @@ function setHTML(id, val){ const el=document.getElementById(id); if(el) el.inner
 // ===== BANK CARD UPDATE =====
 // ===== BANK CARD CAROUSEL =====
 let cardIdx = 0;
-const CARD_THEMES = ['atm-card-0','atm-card-1','atm-card-2','atm-card-3'];
 
 function updateBankCard(){
   const carousel = document.getElementById('cardCarousel');
