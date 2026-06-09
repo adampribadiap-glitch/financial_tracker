@@ -436,15 +436,15 @@ select option{background:#1a1a12;color:var(--text);}
   </div>
   <nav class="nav">
     <div class="nav-section">Keuangan</div>
-    <div class="nav-item active" onclick="switchView('dashboard',this)"><span class="nav-dot"></span>Dashboard</div>
-    <div class="nav-item" onclick="switchView('transactions',this)"><span class="nav-dot"></span>Transaksi</div>
-    <div class="nav-item" onclick="switchView('budget',this)"><span class="nav-dot"></span>Anggaran</div>
+    <div class="nav-item active" data-view="dashboard"><span class="nav-dot"></span>Dashboard</div>
+    <div class="nav-item" data-view="transactions"><span class="nav-dot"></span>Transaksi</div>
+    <div class="nav-item" data-view="budget"><span class="nav-dot"></span>Anggaran</div>
     <div class="nav-section">Tabungan</div>
-    <div class="nav-item" onclick="switchView('savings',this)"><span class="nav-dot"></span>Rekening</div>
-    <div class="nav-item" onclick="switchView('goals',this)"><span class="nav-dot"></span>Target</div>
+    <div class="nav-item" data-view="savings"><span class="nav-dot"></span>Rekening</div>
+    <div class="nav-item" data-view="goals"><span class="nav-dot"></span>Target</div>
     <div class="nav-section">Trading</div>
-    <div class="nav-item" onclick="switchView('trading',this)"><span class="nav-dot"></span>Trade Log</div>
-    <div class="nav-item" onclick="switchView('tradingstats',this)"><span class="nav-dot"></span>Statistik</div>
+    <div class="nav-item" data-view="trading"><span class="nav-dot"></span>Trade Log</div>
+    <div class="nav-item" data-view="tradingstats"><span class="nav-dot"></span>Statistik</div>
   </nav>
   <div class="sidebar-footer">
     <div style="margin-bottom:10px;color:var(--text3);font-size:10px;line-height:1.6;">Lokal · Tersimpan di browser<br>Financial Tracker v3.0</div>
@@ -735,11 +735,11 @@ select option{background:#1a1a12;color:var(--text);}
 
 <!-- BOTTOM NAV (mobile) -->
 <nav class="bottom-nav" id="bottomNav">
-  <button class="bn-item active" onclick="mobileSwitchView('dashboard',this)"><span class="bn-icon">📊</span>Dashboard</button>
-  <button class="bn-item" onclick="mobileSwitchView('transactions',this)"><span class="bn-icon">📋</span>Transaksi</button>
-  <button class="bn-item" onclick="mobileSwitchView('trading',this)"><span class="bn-icon">📈</span>Trading</button>
-  <button class="bn-item" onclick="mobileSwitchView('savings',this)"><span class="bn-icon">🏦</span>Rekening</button>
-  <button class="bn-item" onclick="showMobileMenu()"><span class="bn-icon">☰</span>Menu</button>
+  <button class="bn-item active" data-view="dashboard"><span class="bn-icon">📊</span>Dashboard</button>
+  <button class="bn-item" data-view="transactions"><span class="bn-icon">📋</span>Transaksi</button>
+  <button class="bn-item" data-view="trading"><span class="bn-icon">📈</span>Trading</button>
+  <button class="bn-item" data-view="savings"><span class="bn-icon">🏦</span>Rekening</button>
+  <button class="bn-item" id="menuBtn"><span class="bn-icon">☰</span>Menu</button>
 </nav>
 
 <!-- MOBILE MENU DRAWER -->
@@ -747,17 +747,17 @@ select option{background:#1a1a12;color:var(--text);}
   <div class="modal" style="padding:20px 18px 32px;">
     <div class="modal-title" style="margin-bottom:16px;">Menu</div>
     <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:20px;">
-      <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="mobileSwitchViewMenu('budget')">🎯 Anggaran</button>
-      <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="mobileSwitchViewMenu('goals')">🏆 Target Tabungan</button>
-      <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" onclick="mobileSwitchViewMenu('tradingstats')">📉 Trading Stats</button>
+      <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" data-view="budget" data-closemenu="1">🎯 Anggaran</button>
+      <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" data-view="goals" data-closemenu="1">🏆 Target Tabungan</button>
+      <button class="btn btn-secondary" style="text-align:left;justify-content:flex-start;" data-view="tradingstats" data-closemenu="1">📉 Trading Stats</button>
     </div>
     <div style="border-top:1px solid var(--border);padding-top:16px;display:flex;flex-direction:column;gap:8px;">
       <div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Data</div>
-      <button class="btn btn-primary" onclick="exportData();closeModal('mobile-menu')">⬇ Export Data</button>
-      <button class="btn btn-secondary" onclick="document.getElementById('import-input').click();closeModal('mobile-menu')">⬆ Import Data</button>
+      <button class="btn btn-primary" id="mobileExportBtn">⬇ Export Data</button>
+      <button class="btn btn-secondary" id="mobileImportBtn">⬆ Import Data</button>
     </div>
     <div class="modal-footer" style="padding-top:14px;margin-top:14px;">
-      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('mobile-menu')">Tutup</button>
+      <button class="btn btn-secondary" style="flex:1" id="menuCloseBtn">Tutup</button>
     </div>
   </div>
 </div>
@@ -777,8 +777,67 @@ let cMonth=cDate.getMonth();   // 0-indexed, local
 let cYear=cDate.getFullYear(); // local
 let activeSavId=null,activeSavType=null,editingTxId=null,editingTradeId=null,editingDepId=null,editingWdId=null;
 
+// ===== SUPABASE CONFIG =====
+const SB_URL = 'https://vinzgsjrvvjsnfezotnv.supabase.co';
+const SB_KEY = 'sb_publishable_aaAXxNvHI6gCpFOBo5bk-A_WPEnetWS';
+
+// Simple Supabase REST client
+const sb = {
+  async from(table){
+    return {
+      _table: table,
+      async select(){
+        const r = await fetch(`${SB_URL}/rest/v1/${table}?select=*&order=created_at.desc`, {
+          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'}
+        });
+        if(!r.ok) throw new Error(await r.text());
+        return r.json();
+      },
+      async upsert(row){
+        const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+          method:'POST',
+          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+          body: JSON.stringify(row)
+        });
+        if(!r.ok) throw new Error(await r.text());
+        return r.status===204?{}:r.json();
+      },
+      async delete(id){
+        const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
+          method:'DELETE',
+          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+        });
+        if(!r.ok) throw new Error(await r.text());
+      }
+    };
+  }
+};
+
+// ===== SYNC STATUS UI =====
+function showSyncStatus(msg, type='info'){
+  let el = document.getElementById('sync-status');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'sync-status';
+    el.style.cssText = 'position:fixed;bottom:70px;right:16px;padding:8px 14px;border-radius:8px;font-size:11px;font-weight:500;z-index:9999;transition:opacity .4s;font-family:Inter,sans-serif;max-width:240px;';
+    document.body.appendChild(el);
+  }
+  const colors = {
+    info:  'background:rgba(99,179,237,0.15);border:1px solid rgba(99,179,237,0.3);color:#63b3ed;',
+    ok:    'background:rgba(72,187,120,0.15);border:1px solid rgba(72,187,120,0.3);color:#48bb78;',
+    error: 'background:rgba(229,62,62,0.15);border:1px solid rgba(229,62,62,0.3);color:#fc8181;',
+    saving:'background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.3);color:#d4af37;',
+  };
+  el.style.cssText += colors[type]||colors.info;
+  el.textContent = msg;
+  el.style.opacity = '1';
+  if(type !== 'saving') setTimeout(()=>{ el.style.opacity='0'; }, 3000);
+}
+
+// ===== LOCAL CACHE =====
 function ld(k,d){try{return JSON.parse(localStorage.getItem(k))||d;}catch(e){return d;}}
 function sv(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
 let transactions=ld('ft4_tx',[]);
 let budgets=ld('ft4_budgets',{Makanan:1500000,Transport:500000,Belanja:1000000,Hiburan:500000,Tagihan:800000,Cicilan:1000000,Kesehatan:500000,Pendidikan:500000,Lainnya:500000});
 let accounts=ld('ft4_accounts',[]);
@@ -786,6 +845,64 @@ let goals=ld('ft4_goals',[]);
 let trades=ld('ft4_trades',[]);
 let wdHistory=ld('ft4_wd',[]);
 let depositHistory=ld('ft4_deposits',[]);
+
+// ===== PULL FROM SUPABASE =====
+async function pullFromSupabase(){
+  showSyncStatus('⟳ Menyinkronkan data...', 'info');
+  try {
+    const [txRes, accRes, goalRes, tradeRes, wdRes, depRes, budRes] = await Promise.all([
+      (await sb.from('transactions')).select(),
+      (await sb.from('accounts')).select(),
+      (await sb.from('goals')).select(),
+      (await sb.from('trades')).select(),
+      (await sb.from('wd_history')).select(),
+      (await sb.from('deposit_history')).select(),
+      (await sb.from('budgets')).select(),
+    ]);
+    transactions  = txRes.map(r=>r.data);
+    accounts      = accRes.map(r=>r.data);
+    goals         = goalRes.map(r=>r.data);
+    trades        = tradeRes.map(r=>r.data);
+    wdHistory     = wdRes.map(r=>r.data);
+    depositHistory= depRes.map(r=>r.data);
+    if(budRes.length>0) budgets = budRes[0].data;
+    // update local cache
+    sv('ft4_tx',transactions);sv('ft4_accounts',accounts);sv('ft4_goals',goals);
+    sv('ft4_trades',trades);sv('ft4_wd',wdHistory);sv('ft4_deposits',depositHistory);sv('ft4_budgets',budgets);
+    showSyncStatus('✓ Data tersinkron', 'ok');
+    render();
+  } catch(e) {
+    showSyncStatus('⚠ Offline — pakai data lokal', 'error');
+    console.error('Supabase pull error:', e);
+  }
+}
+
+// ===== PUSH HELPERS =====
+async function pushRecord(table, id, data){
+  try {
+    await (await sb.from(table)).upsert({id: String(id), data: data, updated_at: new Date().toISOString()});
+  } catch(e) {
+    console.error('Push error:', table, e);
+    showSyncStatus('⚠ Gagal sync: '+table, 'error');
+  }
+}
+async function deleteRecord(table, id){
+  try {
+    await (await sb.from(table)).delete(String(id));
+  } catch(e) { console.error('Delete error:', table, e); }
+}
+async function pushBudgets(){
+  try {
+    await (await sb.from('budgets')).upsert({id:'budgets', data: budgets, updated_at: new Date().toISOString()});
+  } catch(e) { console.error('Push budgets error:', e); }
+}
+
+// Wrapped sv that also pushes to Supabase
+function svSync(key, val, table, id){
+  sv(key, val);
+  if(table && id !== undefined) pushRecord(table, id, val.find?.(x=>x.id===id)||val);
+}
+
 
 // Migrate any DD/MM/YYYY dates → YYYY-MM-DD on load
 function migrateDates(){
@@ -845,19 +962,6 @@ const VM={
   trading:{title:'Trade Log',sub:'Catat semua posisi trading',btn:'+ Trade',act:"openModal('trade')"},
   tradingstats:{title:'Trading Stats',sub:'Analisis performa trading',btn:'+ Trade',act:"openModal('trade')"},
 };
-function switchView(v,el){
-  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-  document.getElementById('view-'+v).classList.add('active');
-  el.classList.add('active');
-  currentView=v;
-  const m=VM[v];
-  document.getElementById('pageTitle').textContent=m.title;
-  document.getElementById('pageSub').textContent=m.sub;
-  const b=document.getElementById('mainBtn');
-  b.textContent=m.btn;b.setAttribute('onclick',m.act);
-  render();
-}
 
 // ===== MODALS =====
 function openModal(type,editId){
@@ -923,28 +1027,83 @@ function openModal(type,editId){
   }
   document.getElementById('modal-'+type).classList.add('open');
 }
-function closeModal(t){document.getElementById('modal-'+t).classList.remove('open');}
+function closeModal(t){
+  const el=document.getElementById('modal-'+t)||document.getElementById(t);
+  if(el)el.classList.remove('open');
+}
 ['modal-tx','modal-trade','modal-deposit','modal-wd','modal-savings','mobile-menu'].forEach(id=>{
   const el=document.getElementById(id);
   if(el) el.addEventListener('click',e=>{if(e.target.id===id)e.target.classList.remove('open');});
 });
 
-// ===== MOBILE NAV =====
-function mobileSwitchView(v,btn){
-  document.querySelectorAll('.nav-item').forEach(el=>{
-    if(el.getAttribute('onclick')&&el.getAttribute('onclick').includes("'"+v+"'")){switchView(v,el);}
-  });
-  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
+// ===== NAVIGATION (works on both desktop & mobile) =====
+function switchView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.bn-item').forEach(x=>x.classList.remove('active'));
+  const viewEl = document.getElementById('view-'+v);
+  if(viewEl) viewEl.classList.add('active');
+  document.querySelectorAll('[data-view="'+v+'"]').forEach(el=>el.classList.add('active'));
+  currentView=v;
+  const m=VM[v];
+  if(m){
+    document.getElementById('pageTitle').textContent=m.title;
+    document.getElementById('pageSub').textContent=m.sub;
+    const b=document.getElementById('mainBtn');
+    if(b){b.textContent=m.btn;b.setAttribute('data-action',m.act);}
+  }
+  render();
 }
-function mobileSwitchViewMenu(v){
-  document.querySelectorAll('.nav-item').forEach(el=>{
-    if(el.getAttribute('onclick')&&el.getAttribute('onclick').includes("'"+v+"'")){switchView(v,el);}
-  });
-  closeModal('mobile-menu');
-  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
-}
+
+// Central click handler — handles all navigation & actions via data attributes
+document.addEventListener('click', function(e){
+  const el = e.target.closest('[data-view]');
+  if(el){
+    const v = el.getAttribute('data-view');
+    switchView(v);
+    if(el.getAttribute('data-closemenu')){
+      const mm=document.getElementById('mobile-menu');
+      if(mm) mm.classList.remove('open');
+    }
+    return;
+  }
+  // mainBtn
+  if(e.target.id==='mainBtn'||e.target.closest('#mainBtn')){
+    const act=(e.target.closest('#mainBtn')||e.target).getAttribute('data-action')||"openModal('tx')";
+    try{ eval(act); }catch(err){ openModal('tx'); }
+    return;
+  }
+  // menu button
+  if(e.target.id==='menuBtn'||e.target.closest('#menuBtn')){
+    document.getElementById('mobile-menu').classList.add('open');
+    return;
+  }
+  // menu close
+  if(e.target.id==='menuCloseBtn'){
+    document.getElementById('mobile-menu').classList.remove('open');
+    return;
+  }
+  // mobile export/import
+  if(e.target.id==='mobileExportBtn'){
+    exportData();
+    document.getElementById('mobile-menu').classList.remove('open');
+    return;
+  }
+  if(e.target.id==='mobileImportBtn'){
+    document.getElementById('import-input').click();
+    document.getElementById('mobile-menu').classList.remove('open');
+    return;
+  }
+  // modal backdrop close
+  if(e.target.classList.contains('modal-bg')){
+    e.target.classList.remove('open');
+    return;
+  }
+});
+
 function showMobileMenu(){document.getElementById('mobile-menu').classList.add('open');}
+function mobileSwitchView(v){switchView(v);}
+function mobileSwitchViewMenu(v){switchView(v);document.getElementById('mobile-menu').classList.remove('open');}
 
 function populateAccountsSel(selId,selectedId){
   const sel=document.getElementById(selId);
@@ -1033,37 +1192,28 @@ function saveTransaction(){
 
   if(editingTxId){
     const old=transactions.find(t=>t.id===editingTxId);
-    // reverse old account effect
-    if(old&&old.accountId){
-      const acc=accounts.find(a=>a.id===old.accountId);
-      if(acc){acc.balance+=old.type==='income'?-old.amount:old.amount;sv('ft4_accounts',accounts);}
-    }
+    if(old&&old.accountId){const acc=accounts.find(a=>a.id===old.accountId);if(acc){acc.balance+=old.type==='income'?-old.amount:old.amount;sv('ft4_accounts',accounts);pushRecord('accounts',old.accountId,accounts.find(a=>a.id===old.accountId));}}
     const idx=transactions.findIndex(t=>t.id===editingTxId);
     transactions[idx]={...transactions[idx],type:currentType,desc,amount,cat,date,note,accountId};
-    // apply new account effect
-    if(accountId){
-      const acc=accounts.find(a=>a.id===accountId);
-      if(acc){acc.balance+=currentType==='income'?amount:-amount;acc.log.unshift({date,type:currentType==='income'?'add':'withdraw',amount,desc:`Edit Tx: ${desc}`});sv('ft4_accounts',accounts);}
-    }
+    if(accountId){const acc=accounts.find(a=>a.id===accountId);if(acc){acc.balance+=currentType==='income'?amount:-amount;acc.log.unshift({date,type:currentType==='income'?'add':'withdraw',amount,desc:`Edit Tx: ${desc}`});sv('ft4_accounts',accounts);pushRecord('accounts',accountId,acc);}}
     sv('ft4_tx',transactions);
+    pushRecord('transactions',editingTxId,transactions[idx]);
   } else {
-    if(accountId){
-      const acc=accounts.find(a=>a.id===accountId);
-      if(acc){acc.balance+=currentType==='income'?amount:-amount;acc.log.unshift({date,type:currentType==='income'?'add':'withdraw',amount,desc:`Tx: ${desc}`});sv('ft4_accounts',accounts);}
-    }
-    transactions.unshift({id:Date.now(),type:currentType,desc,amount,cat,date,note,accountId});
+    const newTx={id:Date.now(),type:currentType,desc,amount,cat,date,note,accountId};
+    if(accountId){const acc=accounts.find(a=>a.id===accountId);if(acc){acc.balance+=currentType==='income'?amount:-amount;acc.log.unshift({date,type:currentType==='income'?'add':'withdraw',amount,desc:`Tx: ${desc}`});sv('ft4_accounts',accounts);pushRecord('accounts',accountId,acc);}}
+    transactions.unshift(newTx);
     sv('ft4_tx',transactions);
+    pushRecord('transactions',newTx.id,newTx);
   }
+  showSyncStatus('↑ Menyimpan...','saving');
   closeModal('tx');render();
 }
 function deleteTx(id){
   if(!confirm('Hapus transaksi ini?'))return;
   const tx=transactions.find(t=>t.id===id);
-  if(tx&&tx.accountId){
-    const acc=accounts.find(a=>a.id===tx.accountId);
-    if(acc){acc.balance+=tx.type==='income'?-tx.amount:tx.amount;acc.log.unshift({date:localDateStr(),type:'adjust',amount:tx.amount,desc:`Hapus: ${tx.desc}`});sv('ft4_accounts',accounts);}
-  }
-  transactions=transactions.filter(t=>t.id!==id);sv('ft4_tx',transactions);render();
+  if(tx&&tx.accountId){const acc=accounts.find(a=>a.id===tx.accountId);if(acc){acc.balance+=tx.type==='income'?-tx.amount:tx.amount;acc.log.unshift({date:localDateStr(),type:'adjust',amount:tx.amount,desc:`Hapus: ${tx.desc}`});sv('ft4_accounts',accounts);pushRecord('accounts',tx.accountId,acc);}}
+  transactions=transactions.filter(t=>t.id!==id);sv('ft4_tx',transactions);
+  deleteRecord('transactions',id);render();
 }
 function filterTx(f,btn){txFilter=f;document.querySelectorAll('#tx-filter-row .chip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTxList();}
 function txHTML(t){
@@ -1109,9 +1259,12 @@ function saveTrade(){
   const rec={id:editingTradeId||Date.now(),pair,date,dir,status,lot,entry,exit,sl,tp,pnl,comm,net,note,rr};
   if(editingTradeId){const idx=trades.findIndex(t=>t.id===editingTradeId);trades[idx]=rec;}
   else trades.unshift(rec);
-  sv('ft4_trades',trades);closeModal('trade');render();
+  sv('ft4_trades',trades);
+  pushRecord('trades',rec.id,rec);
+  showSyncStatus('↑ Menyimpan...','saving');
+  closeModal('trade');render();
 }
-function deleteTrade(id){if(!confirm('Hapus trade?'))return;trades=trades.filter(t=>t.id!==id);sv('ft4_trades',trades);render();}
+function deleteTrade(id){if(!confirm('Hapus trade?'))return;trades=trades.filter(t=>t.id!==id);sv('ft4_trades',trades);deleteRecord('trades',id);render();}
 function filterTrades(f,btn){tradeFilter=f;document.querySelectorAll('#trade-filter-row .chip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTradeTable();}
 function renderTradeTable(){
   const tbody=document.getElementById('trade-tbody');
@@ -1165,10 +1318,14 @@ function saveDeposit(){
   } else {
     depositHistory.unshift({id:Date.now(),date,usd,idr,kurs,accountId,accountName:accName,note,type:'deposit'});
   }
-  if(accountId&&idr>0){const a=accounts.find(a=>a.id===accountId);if(a){a.balance-=idr;a.log.unshift({date,type:'withdraw',amount:idr,desc:`Deposit broker: $${usd.toFixed(2)}`});sv('ft4_accounts',accounts);}}
-  sv('ft4_deposits',depositHistory);closeModal('deposit');render();
+  if(accountId&&idr>0){const a=accounts.find(a=>a.id===accountId);if(a){a.balance-=idr;a.log.unshift({date,type:'withdraw',amount:idr,desc:`Deposit broker: $${usd.toFixed(2)}`});sv('ft4_accounts',accounts);pushRecord('accounts',accountId,a);}}
+  sv('ft4_deposits',depositHistory);
+  const saved=editingDepId?depositHistory.find(d=>d.id===editingDepId):depositHistory[0];
+  if(saved)pushRecord('deposit_history',saved.id,saved);
+  showSyncStatus('↑ Menyimpan...','saving');
+  closeModal('deposit');render();
 }
-function deleteDeposit(id){if(!confirm('Hapus deposit ini?'))return;depositHistory=depositHistory.filter(d=>d.id!==id);sv('ft4_deposits',depositHistory);render();}
+function deleteDeposit(id){if(!confirm('Hapus deposit ini?'))return;depositHistory=depositHistory.filter(d=>d.id!==id);sv('ft4_deposits',depositHistory);deleteRecord('deposit_history',id);render();}
 function saveWD(){
   const usd=parseFloat(document.getElementById('wd-usd').value)||0;
   const idr=parseFloat(document.getElementById('wd-idr').value)||0;
@@ -1186,10 +1343,14 @@ function saveWD(){
   } else {
     wdHistory.unshift({id:Date.now(),date,usd,idr,kurs,accountId,accountName:accName,note,type:'wd'});
   }
-  if(accountId&&idr>0){const a=accounts.find(a=>a.id===accountId);if(a){a.balance+=idr;a.log.unshift({date,type:'add',amount:idr,desc:`WD broker: $${usd.toFixed(2)}`});sv('ft4_accounts',accounts);}}
-  sv('ft4_wd',wdHistory);closeModal('wd');render();
+  if(accountId&&idr>0){const a=accounts.find(a=>a.id===accountId);if(a){a.balance+=idr;a.log.unshift({date,type:'add',amount:idr,desc:`WD broker: $${usd.toFixed(2)}`});sv('ft4_accounts',accounts);pushRecord('accounts',accountId,a);}}
+  sv('ft4_wd',wdHistory);
+  const savedWd=editingWdId?wdHistory.find(w=>w.id===editingWdId):wdHistory[0];
+  if(savedWd)pushRecord('wd_history',savedWd.id,savedWd);
+  showSyncStatus('↑ Menyimpan...','saving');
+  closeModal('wd');render();
 }
-function deleteWD(id){if(!confirm('Hapus WD ini?'))return;wdHistory=wdHistory.filter(w=>w.id!==id);sv('ft4_wd',wdHistory);render();}
+function deleteWD(id){if(!confirm('Hapus WD ini?'))return;wdHistory=wdHistory.filter(w=>w.id!==id);sv('ft4_wd',wdHistory);deleteRecord('wd_history',id);render();}
 function filterFlow(f,btn){flowFilter=f;document.querySelectorAll('#flow-filter-row .chip').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderFlowList();}
 function renderFlowList(){
   const el=document.getElementById('flow-list');if(!el)return;
@@ -1220,12 +1381,13 @@ function addAccount(){
   const init=parseFloat(document.getElementById('sav-init').value)||0;
   const desc=document.getElementById('sav-desc').value.trim();
   if(!name){alert('Nama rekening wajib.');return;}
-  accounts.push({id:Date.now(),name,desc,balance:init,log:[{date:localDateStr(),type:'init',amount:init,desc:'Saldo awal'}]});
-  sv('ft4_accounts',accounts);
+  const acc={id:Date.now(),name,desc,balance:init,log:[{date:localDateStr(),type:'init',amount:init,desc:'Saldo awal'}]};
+  accounts.push(acc);sv('ft4_accounts',accounts);
+  pushRecord('accounts',acc.id,acc);
   ['sav-name','sav-init','sav-desc'].forEach(i=>document.getElementById(i).value='');
   renderAccounts();
 }
-function deleteAccount(id){if(!confirm('Hapus rekening beserta riwayatnya?'))return;accounts=accounts.filter(a=>a.id!==id);sv('ft4_accounts',accounts);renderAccounts();}
+function deleteAccount(id){if(!confirm('Hapus rekening beserta riwayatnya?'))return;accounts=accounts.filter(a=>a.id!==id);sv('ft4_accounts',accounts);deleteRecord('accounts',id);renderAccounts();}
 function openSavModal(id,type){
   activeSavId=id;activeSavType=type;
   document.getElementById('sav-modal-title').textContent=type==='add'?'Setor Tabungan':'Tarik Tabungan';
@@ -1243,7 +1405,9 @@ function doMutation(){
   if(!amount){alert('Masukkan jumlah.');return;}
   if(activeSavType==='add')acc.balance+=amount;else acc.balance=Math.max(0,acc.balance-amount);
   acc.log.unshift({date,type:activeSavType==='add'?'add':'withdraw',amount,desc});
-  sv('ft4_accounts',accounts);closeModal('savings');renderAccounts();renderDashStats();
+  sv('ft4_accounts',accounts);
+  pushRecord('accounts',activeSavId,acc);
+  closeModal('savings');renderAccounts();renderDashStats();
 }
 function renderAccounts(){
   const el=document.getElementById('savings-list');
@@ -1274,7 +1438,10 @@ function renderBudget(txM){
     return `<div class="budget-card"><div class="budget-top"><span class="budget-name">${EMO[c]} ${c}</span><span class="budget-pct" style="color:${col}">${pct}%</span></div><div class="progress"><div class="progress-bar" style="width:${pct}%;background:${col}"></div></div><div class="budget-nums"><span>${fmt(spent)}</span><span>${fmt(limit)}</span></div></div>`;
   }).join('');
 }
-function saveBudgets(){CATS_EXP.forEach(c=>{const i=document.getElementById('budget-'+c);if(i)budgets[c]=parseFloat(i.value)||0;});sv('ft4_budgets',budgets);render();alert('Anggaran tersimpan!');}
+function saveBudgets(){
+  CATS_EXP.forEach(c=>{const i=document.getElementById('budget-'+c);if(i)budgets[c]=parseFloat(i.value)||0;});
+  sv('ft4_budgets',budgets);pushBudgets();render();alert('Anggaran tersimpan!');
+}
 
 // ===== GOALS =====
 function addGoal(){
@@ -1282,12 +1449,16 @@ function addGoal(){
   const target=parseFloat(document.getElementById('goal-target').value);
   const deadline=document.getElementById('goal-deadline').value;
   if(!name||!target||!deadline){alert('Isi semua kolom.');return;}
-  goals.push({id:Date.now(),name,target,saved:0,deadline});sv('ft4_goals',goals);
+  const g={id:Date.now(),name,target,saved:0,deadline};
+  goals.push(g);sv('ft4_goals',goals);pushRecord('goals',g.id,g);
   ['goal-name','goal-target','goal-deadline'].forEach(i=>document.getElementById(i).value='');
   renderGoalList();
 }
-function deleteGoal(id){if(!confirm('Hapus target?'))return;goals=goals.filter(g=>g.id!==id);sv('ft4_goals',goals);renderGoalList();}
-function updateGoalSaved(id,val){const g=goals.find(g=>g.id===id);if(g){g.saved=Math.min(g.target,Math.max(0,parseFloat(val)||0));sv('ft4_goals',goals);renderGoalList();}}
+function deleteGoal(id){if(!confirm('Hapus target?'))return;goals=goals.filter(g=>g.id!==id);sv('ft4_goals',goals);deleteRecord('goals',id);renderGoalList();}
+function updateGoalSaved(id,val){
+  const g=goals.find(g=>g.id===id);
+  if(g){g.saved=Math.min(g.target,Math.max(0,parseFloat(val)||0));sv('ft4_goals',goals);pushRecord('goals',id,g);renderGoalList();}
+}
 function renderGoalList(){
   const el=document.getElementById('goals-list');
   if(!goals.length){el.innerHTML='<div class="empty"><div class="empty-icon">🏆</div>Belum ada target tabungan</div>';return;}
@@ -1517,7 +1688,11 @@ function importData(e){
 }
 
 updateMonth();
+const initMainBtn=document.getElementById('mainBtn');
+if(initMainBtn)initMainBtn.setAttribute('data-action',"openModal('tx')");
 render();
+// Pull from Supabase on load (async, will re-render when done)
+pullFromSupabase();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" onload="render()"></script>
 </body>
