@@ -332,11 +332,11 @@ select option{background:var(--surface);}
 
 /* ===== AUTH SCREEN ===== */
 #auth-screen{
-  display:none;position:fixed;inset:0;z-index:1000;
+  display:flex;position:fixed;inset:0;z-index:1000;
   background:var(--bg);
   align-items:center;justify-content:center;
 }
-#auth-screen.show{display:flex;}
+#auth-screen.hidden{display:none!important;}
 .auth-card{
   width:420px;max-width:calc(100vw - 32px);
   background:var(--surface);border:1px solid var(--border2);
@@ -369,6 +369,7 @@ select option{background:var(--surface);}
 /* USER BADGE in topbar */
 .user-badge{display:flex;align-items:center;gap:6px;}
 .user-badge-email{font-size:11px;color:var(--text3);}
+.bottom-nav{display:none;}
 
 @media(max-width:768px){
   .sidebar{display:none;}
@@ -1033,7 +1034,7 @@ async function onLoginSuccess(data){
   // Update UI
   updateUserUI();
   // Hide auth screen, show app
-  document.getElementById('auth-screen').classList.remove('show');
+  document.getElementById('auth-screen').classList.add('hidden');
   // Pull user data
   await pullFromSupabase();
 }
@@ -1069,7 +1070,7 @@ async function authSignOut(){
   // Reset data
   transactions=[];accounts=[];goals=[];trades=[];wdHistory=[];depositHistory=[];
   // Show auth screen
-  document.getElementById('auth-screen').classList.add('show');
+  document.getElementById('auth-screen').classList.remove('hidden');
   document.getElementById('auth-err').classList.remove('show');
   document.getElementById('auth-ok').classList.remove('show');
   document.getElementById('auth-email').value='';
@@ -1123,20 +1124,20 @@ async function checkSession(){
     if(r.ok){
       currentUser = await r.json();
       updateUserUI();
-      document.getElementById('auth-screen').classList.remove('show');
+      document.getElementById('auth-screen').classList.add('hidden');
       return true;
     } else {
       // Try refresh
       const ok = await refreshToken();
       if(ok){
         updateUserUI();
-        document.getElementById('auth-screen').classList.remove('show');
+        document.getElementById('auth-screen').classList.add('hidden');
         return true;
       }
     }
   }
   // Show login
-  document.getElementById('auth-screen').classList.add('show');
+  document.getElementById('auth-screen').classList.remove('hidden');
   return false;
 }
 
