@@ -867,21 +867,30 @@ async function pullFromSupabase(){
     const sbDep  = depRes.map(r=>r.data).filter(Boolean);
     const sbBud  = budRes.length>0 && budRes[0].data ? budRes[0].data : null;
 
-    const sbHasData = sbTx.length>0||sbAcc.length>0||sbTrade.length>0||sbDep.length>0;
-    const localHasData = transactions.length>0||accounts.length>0||trades.length>0||depositHistory.length>0;
+    const sbHasData = sbTx.length>0||sbAcc.length>0||sbGoal.length>0||sbTrade.length>0||sbWd.length>0||sbDep.length>0||sbBud!==null;
+    const localHasData = transactions.length>0||accounts.length>0||goals.length>0||trades.length>0||wdHistory.length>0||depositHistory.length>0;
 
     if(sbHasData){
-      // Supabase has data → use it
-      transactions   = sbTx;
-      accounts       = sbAcc;
-      goals          = sbGoal;
-      trades         = sbTrade;
-      wdHistory      = sbWd;
-      depositHistory = sbDep;
-      if(sbBud) budgets = sbBud;
-      sv('ft4_tx',transactions); sv('ft4_accounts',accounts); sv('ft4_goals',goals);
-      sv('ft4_trades',trades); sv('ft4_wd',wdHistory); sv('ft4_deposits',depositHistory);
-      if(sbBud) sv('ft4_budgets',budgets);
+      // Merge: only replace local if Supabase has data for that table
+      if(sbTx.length>0)   { transactions   = sbTx;   sv('ft4_tx',transactions); }
+      if(sbAcc.length>0)  { accounts       = sbAcc;  sv('ft4_accounts',accounts); }
+      if(sbGoal.length>0) { goals          = sbGoal; sv('ft4_goals',goals); }
+      if(sbTrade.length>0){ trades         = sbTrade; sv('ft4_trades',trades); }
+      if(sbWd.length>0)   { wdHistory      = sbWd;   sv('ft4_wd',wdHistory); }
+      if(sbDep.length>0)  { depositHistory = sbDep;  sv('ft4_deposits',depositHistory); }
+      if(sbBud)           { budgets        = sbBud;  sv('ft4_budgets',budgets); }
+
+      // Push any local data that Supabase doesn't have yet
+      const needPush = (sbTx.length===0&&transactions.length>0)||
+                       (sbAcc.length===0&&accounts.length>0)||
+                       (sbGoal.length===0&&goals.length>0)||
+                       (sbTrade.length===0&&trades.length>0)||
+                       (sbWd.length===0&&wdHistory.length>0)||
+                       (sbDep.length===0&&depositHistory.length>0);
+      if(needPush){
+        showSyncStatus('⟳ Upload data yang belum sync...', 'saving');
+        await pushAllToSupabase();
+      }
       showSyncStatus('✓ Tersinkron dari cloud', 'ok');
     } else if(localHasData){
       // Supabase empty but local has data → push local up
