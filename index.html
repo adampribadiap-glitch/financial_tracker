@@ -1793,6 +1793,7 @@ function renderPieChart(){
 function render(){
   const txM=txOfM(cYear,cMonth);
   renderDashStats();
+  if(typeof updateBankCard==='function') updateBankCard();
   renderTradingFlowStats();
   renderBarChart();
   renderPieChart();
@@ -1943,13 +1944,6 @@ function updateBankCard(){
   document.getElementById('bc-num').textContent=first?first.name.toUpperCase().padEnd(20,'·').slice(0,20):'•••• •••• •••• ••••';
   document.getElementById('bc-balance').textContent=fmt(total);
   document.getElementById('bc-acc-count').textContent=accounts.length;
-}
-
-// Override renderDashStats to also update bank card
-const _origRenderDashStats=renderDashStats;
-function renderDashStats(){
-  _origRenderDashStats();
-  updateBankCard();
 }
 
 // switchView helper for HTML onclick
