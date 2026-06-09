@@ -843,6 +843,8 @@ let depositHistory=ld('ft4_deposits',[]);
 
 // ===== PULL FROM SUPABASE =====
 async function pullFromSupabase(){
+  const btn=document.getElementById('syncBtn');
+  if(btn)btn.textContent='⟳ Syncing...';
   showSyncStatus('⟳ Menyinkronkan...', 'info');
   try {
     const [txRes, accRes, goalRes, tradeRes, wdRes, depRes, budRes] = await Promise.all([
@@ -854,27 +856,70 @@ async function pullFromSupabase(){
       sbSelect('deposit_history'),
       sbSelect('budgets'),
     ]);
-    transactions   = txRes.map(r=>r.data).filter(Boolean);
-    accounts       = accRes.map(r=>r.data).filter(Boolean);
-    goals          = goalRes.map(r=>r.data).filter(Boolean);
-    trades         = tradeRes.map(r=>r.data).filter(Boolean);
-    wdHistory      = wdRes.map(r=>r.data).filter(Boolean);
-    depositHistory = depRes.map(r=>r.data).filter(Boolean);
-    if(budRes.length > 0 && budRes[0].data) budgets = budRes[0].data;
-    sv('ft4_tx',transactions); sv('ft4_accounts',accounts); sv('ft4_goals',goals);
-    sv('ft4_trades',trades); sv('ft4_wd',wdHistory); sv('ft4_deposits',depositHistory); sv('ft4_budgets',budgets);
-    showSyncStatus('✓ Tersinkron', 'ok');
+
+    // Only overwrite local if Supabase has data
+    // If Supabase is empty but local has data → push local to Supabase instead
+    const sbTx   = txRes.map(r=>r.data).filter(Boolean);
+    const sbAcc  = accRes.map(r=>r.data).filter(Boolean);
+    const sbGoal = goalRes.map(r=>r.data).filter(Boolean);
+    const sbTrade= tradeRes.map(r=>r.data).filter(Boolean);
+    const sbWd   = wdRes.map(r=>r.data).filter(Boolean);
+    const sbDep  = depRes.map(r=>r.data).filter(Boolean);
+    const sbBud  = budRes.length>0 && budRes[0].data ? budRes[0].data : null;
+
+    const sbHasData = sbTx.length>0||sbAcc.length>0||sbTrade.length>0||sbDep.length>0;
+    const localHasData = transactions.length>0||accounts.length>0||trades.length>0||depositHistory.length>0;
+
+    if(sbHasData){
+      // Supabase has data → use it
+      transactions   = sbTx;
+      accounts       = sbAcc;
+      goals          = sbGoal;
+      trades         = sbTrade;
+      wdHistory      = sbWd;
+      depositHistory = sbDep;
+      if(sbBud) budgets = sbBud;
+      sv('ft4_tx',transactions); sv('ft4_accounts',accounts); sv('ft4_goals',goals);
+      sv('ft4_trades',trades); sv('ft4_wd',wdHistory); sv('ft4_deposits',depositHistory);
+      if(sbBud) sv('ft4_budgets',budgets);
+      showSyncStatus('✓ Tersinkron dari cloud', 'ok');
+    } else if(localHasData){
+      // Supabase empty but local has data → push local up
+      showSyncStatus('⟳ Upload data lokal...', 'saving');
+      await pushAllToSupabase();
+      showSyncStatus('✓ Data lokal berhasil diupload', 'ok');
+    } else {
+      showSyncStatus('✓ Tersinkron (kosong)', 'ok');
+    }
+
+    if(btn)btn.textContent='⟳ Sync';
     render();
   } catch(e) {
+    if(btn)btn.textContent='⟳ Sync';
     console.error('Supabase pull error:', e);
-    const msg = '⚠ Sync gagal: ' + e.message;
-    showSyncStatus(msg, 'error');
-    // Show alert on first error so user sees it
+    showSyncStatus('⚠ ' + e.message, 'error');
     if(!window._syncErrorShown){
-      window._syncErrorShown = true;
-      alert('Supabase Error:\n' + e.message + '\n\nCek Console untuk detail.');
+      window._syncErrorShown=true;
+      alert('Supabase Error:\n'+e.message);
     }
   }
+}
+
+// Push ALL local data up to Supabase
+async function pushAllToSupabase(){
+  const all = [
+    ...transactions.map(r=>({table:'transactions',id:r.id,data:r})),
+    ...accounts.map(r=>({table:'accounts',id:r.id,data:r})),
+    ...goals.map(r=>({table:'goals',id:r.id,data:r})),
+    ...trades.map(r=>({table:'trades',id:r.id,data:r})),
+    ...wdHistory.map(r=>({table:'wd_history',id:r.id,data:r})),
+    ...depositHistory.map(r=>({table:'deposit_history',id:r.id,data:r})),
+  ];
+  // batch push
+  for(const item of all){
+    await sbUpsert(item.table,{id:String(item.id),data:item.data,updated_at:new Date().toISOString()});
+  }
+  await sbUpsert('budgets',{id:'budgets',data:budgets,updated_at:new Date().toISOString()});
 }
 
 // ===== PUSH HELPERS =====
@@ -1671,9 +1716,17 @@ function importData(e){
       if(data.depositHistory){depositHistory=data.depositHistory;sv('ft4_deposits',depositHistory);}
       status.style.display='block';
       status.style.color='var(--green)';
-      status.textContent='✓ Import berhasil!';
-      setTimeout(()=>{status.style.display='none';},3000);
+      status.textContent='✓ Import berhasil! Mengupload ke cloud...';
       render();
+      // Push imported data to Supabase
+      pushAllToSupabase().then(()=>{
+        status.textContent='✓ Import & sync berhasil!';
+        showSyncStatus('✓ Data diimport & tersinkron', 'ok');
+        setTimeout(()=>{status.style.display='none';},4000);
+      }).catch(err=>{
+        status.textContent='✓ Import lokal berhasil (sync gagal: '+err.message+')';
+        setTimeout(()=>{status.style.display='none';},5000);
+      });
     }catch(err){
       status.style.display='block';
       status.style.color='var(--red2)';
