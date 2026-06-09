@@ -1388,50 +1388,70 @@ function saveWD(){
   const kurs=idr>0&&usd>0?Math.round(idr/usd):0;
   const accName=accountId?(accounts.find(a=>a.id===accountId)||{}).name||'':'';
 
+  // If editing, remove old linked transaction first
   if(editingWdId){
-    // Reverse old account effect
     const old=wdHistory.find(w=>w.id===editingWdId);
-    if(old&&old.accountId&&old.idr){const a=accounts.find(a=>a.id===old.accountId);if(a){a.balance-=old.idr;sv('ft4_accounts',accounts);}}
-    // Remove old linked transaction
-    if(old&&old.linkedTxId){
-      transactions=transactions.filter(t=>t.id!==old.linkedTxId);
-      sv('ft4_tx',transactions);
-      deleteRecord('transactions',old.linkedTxId);
+    if(old){
+      // Reverse old account balance
+      if(old.accountId&&old.idr>0){
+        const a=accounts.find(a=>a.id===old.accountId);
+        if(a){a.balance-=old.idr;sv('ft4_accounts',accounts);pushRecord('accounts',old.accountId,a);}
+      }
+      // Remove old linked income transaction
+      if(old.linkedTxId){
+        transactions=transactions.filter(t=>t.id!==old.linkedTxId);
+        sv('ft4_tx',transactions);
+        deleteRecord('transactions',old.linkedTxId);
+      }
     }
-    const idx=wdHistory.findIndex(w=>w.id===editingWdId);
-    wdHistory[idx]={id:editingWdId,date,usd,idr,kurs,accountId,accountName:accName,note,type:'wd'};
-    // Create new linked tx if IDR > 0
-    if(idr>0){
-      const txId=Date.now();
-      const newTx={id:txId,type:'income',desc:`WD Trading $${usd.toFixed(2)}`,amount:idr,cat:'Trading',date,note:note||`Kurs Rp${kurs.toLocaleString('id-ID')}/USD`,accountId};
-      transactions.unshift(newTx);
-      sv('ft4_tx',transactions);
-      pushRecord('transactions',txId,newTx);
-      wdHistory[idx].linkedTxId=txId;
-    }
-  } else {
-    const wdId=Date.now();
-    let linkedTxId=null;
-    // Auto-create income transaction if IDR is filled
-    if(idr>0){
-      linkedTxId=wdId+1;
-      const newTx={id:linkedTxId,type:'income',desc:`WD Trading $${usd.toFixed(2)}`,amount:idr,cat:'Trading',date,note:note||`Kurs Rp${kurs.toLocaleString('id-ID')}/USD`,accountId};
-      transactions.unshift(newTx);
-      sv('ft4_tx',transactions);
-      pushRecord('transactions',linkedTxId,newTx);
-    }
-    wdHistory.unshift({id:wdId,date,usd,idr,kurs,accountId,accountName:accName,note,type:'wd',linkedTxId});
+    wdHistory=wdHistory.filter(w=>w.id!==editingWdId);
+    sv('ft4_wd',wdHistory);
+    deleteRecord('wd_history',editingWdId);
   }
 
-  // Update account balance
-  if(accountId&&idr>0){
-    const a=accounts.find(a=>a.id===accountId);
-    if(a){a.balance+=idr;a.log.unshift({date,type:'add',amount:idr,desc:`WD broker: $${usd.toFixed(2)}`});sv('ft4_accounts',accounts);pushRecord('accounts',accountId,a);}
+  // Create income transaction if IDR is filled
+  let linkedTxId=null;
+  if(idr>0){
+    linkedTxId=Date.now();
+    const newTx={
+      id:linkedTxId,
+      type:'income',
+      desc:`WD Trading $${usd.toFixed(2)}`,
+      amount:idr,
+      cat:'Trading',
+      date,
+      note:note||(kurs>0?`Kurs Rp${kurs.toLocaleString('id-ID')}/USD`:''),
+      accountId
+    };
+    transactions.unshift(newTx);
+    sv('ft4_tx',transactions);
+    pushRecord('transactions',linkedTxId,newTx);
+
+    // Also update account balance via the transaction
+    if(accountId){
+      const a=accounts.find(a=>a.id===accountId);
+      if(a){
+        a.balance+=idr;
+        a.log.unshift({date,type:'add',amount:idr,desc:`WD Trading $${usd.toFixed(2)}`});
+        sv('ft4_accounts',accounts);
+        pushRecord('accounts',accountId,a);
+      }
+    }
   }
+
+  // Save WD record
+  const wdRec={
+    id:Date.now()+(linkedTxId?1:0),
+    date,usd,idr,kurs,
+    accountId,accountName:accName,
+    note,type:'wd',
+    linkedTxId
+  };
+  wdHistory.unshift(wdRec);
   sv('ft4_wd',wdHistory);
-  const savedWd=editingWdId?wdHistory.find(w=>w.id===editingWdId):wdHistory[0];
-  if(savedWd)pushRecord('wd_history',savedWd.id,savedWd);
-  showSyncStatus('↑ Menyimpan...','saving');
+  pushRecord('wd_history',wdRec.id,wdRec);
+
+  showSyncStatus('✓ WD tersimpan'+(idr>0?' & pemasukan dicatat':''),'ok');
   closeModal('wd');render();
 }
 
