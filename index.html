@@ -1520,21 +1520,42 @@ function renderFlowList(){
   if(flowFilter==='deposit')all=all.filter(r=>r._t==='deposit');
   if(flowFilter==='wd')all=all.filter(r=>r._t==='wd');
   if(!all.length){el.innerHTML='<div class="empty"><div class="empty-icon">📋</div>Belum ada riwayat</div>';return;}
-  el.innerHTML=`<table class="trade-table"><thead><tr><th>Tgl</th><th>Tipe</th><th>USD</th><th>IDR</th><th>Kurs</th><th>Rekening</th><th>Catatan</th><th></th></tr></thead><tbody>
-    ${all.map(r=>`<tr>
-      <td class="mono">${fmtDate(r.date)}</td>
-      <td><span class="badge ${r._t==='deposit'?'blue':'amber'}">${r._t==='deposit'?'↓ Deposit':'↑ Withdraw'}</span></td>
-      <td class="mono ${r._t==='deposit'?'pnl-neg':'pnl-pos'}">${r._t==='deposit'?'−':'+'}$${r.usd.toFixed(2)}</td>
-      <td class="mono">${r.idr>0?(r._t==='deposit'?'−':'+')+(fmt(r.idr)):'—'}</td>
-      <td class="mono" style="color:var(--text3)">${r.kurs>0?'Rp '+r.kurs.toLocaleString('id-ID'):'—'}</td>
-      <td style="font-size:11px">${r.accountName?'🏦 '+r.accountName:'—'}</td>
-      <td style="color:var(--text3);font-size:10px">${r.note||'—'}</td>
-      <td><div class="row-actions">
+  el.innerHTML=all.map(r=>{
+    const isWd=r._t==='wd';
+    const usdColor=isWd?'var(--green)':'var(--red)';
+    const idrColor=isWd?'var(--green)':'var(--red)';
+    return `<div style="display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--border);">
+      <!-- Icon -->
+      <div style="width:42px;height:42px;border-radius:12px;background:${isWd?'var(--green-bg)':'var(--blue-bg)'};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${isWd?'↑':'↓'}</div>
+      <!-- Info -->
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);">${isWd?'Withdraw':'Deposit'}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${fmtDate(r.date)}${r.accountName?' · 🏦 '+r.accountName:''}${r.note?' · '+r.note:''}</div>
+      </div>
+      <!-- USD -->
+      <div style="text-align:center;min-width:70px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;">USD</div>
+        <div style="font-size:14px;font-weight:700;color:${usdColor};">${isWd?'+':'-'}$${r.usd.toFixed(2)}</div>
+      </div>
+      <!-- IDR -->
+      <div style="text-align:center;min-width:110px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;">IDR</div>
+        <div style="font-size:14px;font-weight:700;color:${r.idr>0?idrColor:'var(--text3)'};">${r.idr>0?(isWd?'+':'-')+fmt(r.idr):'—'}</div>
+      </div>
+      <!-- Kurs -->
+      <div style="text-align:center;min-width:100px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;">Kurs</div>
+        <div style="font-size:12px;font-weight:500;color:var(--text2);">${r.kurs>0?'Rp '+r.kurs.toLocaleString('id-ID'):'—'}</div>
+      </div>
+      <!-- Actions -->
+      <div style="display:flex;gap:4px;flex-shrink:0;">
         <button class="icon-btn" onclick="openModal('${r._t}',${r.id})" title="Edit">✏️</button>
-        <button class="icon-btn del" onclick="${r._t==='deposit'?'deleteDeposit':'deleteWD'}(${r.id})" title="Hapus">🗑</button>
-      </div></td>
-    </tr>`).join('')}
-  </tbody></table>`;
+        <button class="icon-btn del" onclick="${isWd?'deleteWD':'deleteDeposit'}(${r.id})" title="Hapus">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+  // remove last border
+  el.style.paddingBottom='0';
 }
 
 // ===== ACCOUNTS =====
