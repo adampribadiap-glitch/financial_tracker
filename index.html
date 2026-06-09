@@ -869,6 +869,7 @@ select option{background:var(--surface);}
   <div class="modal">
     <div class="modal-title" id="dep-modal-title">Deposit Trading Capital</div>
     <div class="info-box blue">💡 Enter USD amount at broker and IDR sent manually.</div>
+    <div class="info-box" style="background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);margin-top:-4px;">💸 If IDR filled → auto-recorded as <b>Expense</b> in transactions.</div>
     <div class="fg fg2">
       <div class="form-group" style="margin:0"><label>Amount (USD)</label><input id="dep-usd" type="number" step="0.01" placeholder="500.00" oninput="calcKurs('dep-usd','dep-idr','dep-kurs-preview')"></div>
       <div class="form-group" style="margin:0"><label>Sent (IDR)</label><input id="dep-idr" type="number" placeholder="8100000" oninput="calcKurs('dep-usd','dep-idr','dep-kurs-preview')"></div>
@@ -1776,22 +1777,51 @@ function saveDeposit(){
   if(!usd||!date){alert('Nominal USD dan tanggal wajib.');return;}
   const kurs=idr>0&&usd>0?Math.round(idr/usd):0;
   const accName=accountId?(accounts.find(a=>a.id===accountId)||{}).name||'':'';
+
+  // If editing, remove old linked transaction first
   if(editingDepId){
     const old=depositHistory.find(d=>d.id===editingDepId);
-    if(old&&old.accountId&&old.idr){const a=accounts.find(a=>a.id===old.accountId);if(a){a.balance+=old.idr;sv('ft4_accounts',accounts);}}
-    const idx=depositHistory.findIndex(d=>d.id===editingDepId);
-    depositHistory[idx]={id:editingDepId,date,usd,idr,kurs,accountId,accountName:accName,note,type:'deposit'};
-  } else {
-    depositHistory.unshift({id:Date.now(),date,usd,idr,kurs,accountId,accountName:accName,note,type:'deposit'});
+    if(old){
+      if(old.accountId&&old.idr>0){const a=accounts.find(a=>a.id===old.accountId);if(a){a.balance+=old.idr;sv('ft4_accounts',accounts);pushRecord('accounts',old.accountId,a);}}
+      if(old.linkedTxId){transactions=transactions.filter(t=>t.id!==old.linkedTxId);sv('ft4_tx',transactions);deleteRecord('transactions',old.linkedTxId);}
+    }
+    depositHistory=depositHistory.filter(d=>d.id!==editingDepId);
+    sv('ft4_deposits',depositHistory);
+    deleteRecord('deposit_history',editingDepId);
   }
-  if(accountId&&idr>0){const a=accounts.find(a=>a.id===accountId);if(a){a.balance-=idr;a.log.unshift({date,type:'withdraw',amount:idr,desc:`Deposit broker: $${usd.toFixed(2)}`});sv('ft4_accounts',accounts);pushRecord('accounts',accountId,a);}}
+
+  // Auto-create expense transaction if IDR filled
+  let linkedTxId=null;
+  if(idr>0){
+    linkedTxId=Date.now();
+    const newTx={id:linkedTxId,type:'expense',desc:`Deposit Trading $${usd.toFixed(2)}`,amount:idr,cat:'Lainnya',date,note:note||(kurs>0?`Kurs Rp${kurs.toLocaleString('id-ID')}/USD`:''),accountId};
+    transactions.unshift(newTx);
+    sv('ft4_tx',transactions);
+    pushRecord('transactions',linkedTxId,newTx);
+    // Deduct from account
+    if(accountId){const a=accounts.find(a=>a.id===accountId);if(a){a.balance-=idr;a.log.unshift({date,type:'withdraw',amount:idr,desc:`Deposit broker: $${usd.toFixed(2)}`});sv('ft4_accounts',accounts);pushRecord('accounts',accountId,a);}}
+  }
+
+  const depRec={id:Date.now()+(linkedTxId?1:0),date,usd,idr,kurs,accountId,accountName:accName,note,type:'deposit',linkedTxId};
+  depositHistory.unshift(depRec);
   sv('ft4_deposits',depositHistory);
-  const saved=editingDepId?depositHistory.find(d=>d.id===editingDepId):depositHistory[0];
-  if(saved)pushRecord('deposit_history',saved.id,saved);
-  showSyncStatus('↑ Menyimpan...','saving');
+  pushRecord('deposit_history',depRec.id,depRec);
+  showSyncStatus('✓ Deposit tersimpan'+(idr>0?' & pengeluaran dicatat':''),'ok');
   closeModal('deposit');render();
 }
-function deleteDeposit(id){if(!confirm('Hapus deposit ini?'))return;depositHistory=depositHistory.filter(d=>d.id!==id);sv('ft4_deposits',depositHistory);deleteRecord('deposit_history',id);render();}
+
+function deleteDeposit(id){
+  if(!confirm('Hapus deposit ini? Transaksi pengeluaran terkait juga akan dihapus.'))return;
+  const dep=depositHistory.find(d=>d.id===id);
+  if(dep){
+    if(dep.linkedTxId){transactions=transactions.filter(t=>t.id!==dep.linkedTxId);sv('ft4_tx',transactions);deleteRecord('transactions',dep.linkedTxId);}
+    if(dep.accountId&&dep.idr>0){const a=accounts.find(ac=>ac.id===dep.accountId);if(a){a.balance+=dep.idr;sv('ft4_accounts',accounts);pushRecord('accounts',dep.accountId,a);}}
+  }
+  depositHistory=depositHistory.filter(d=>d.id!==id);
+  sv('ft4_deposits',depositHistory);
+  deleteRecord('deposit_history',id);
+  render();
+}
 function saveWD(){
   const usd=parseFloat(document.getElementById('wd-usd').value)||0;
   const idr=parseFloat(document.getElementById('wd-idr').value)||0;
