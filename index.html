@@ -780,38 +780,33 @@ let activeSavId=null,activeSavType=null,editingTxId=null,editingTradeId=null,edi
 // ===== SUPABASE CONFIG =====
 const SB_URL = 'https://tgnrtnsasowmecamynnq.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnbnJ0bnNhc293bWVjYW15bm5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NjQ1MjQsImV4cCI6MjA5NjU0MDUyNH0.AlFLn9oiKZkwVAam2V9hF-QbaNWNMjvghtszDfz6XqU';
-
-// Simple Supabase REST client
-const sb = {
-  async from(table){
-    return {
-      _table: table,
-      async select(){
-        const r = await fetch(`${SB_URL}/rest/v1/${table}?select=*&order=created_at.desc`, {
-          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'}
-        });
-        if(!r.ok) throw new Error(await r.text());
-        return r.json();
-      },
-      async upsert(row){
-        const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
-          method:'POST',
-          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
-          body: JSON.stringify(row)
-        });
-        if(!r.ok) throw new Error(await r.text());
-        return r.status===204?{}:r.json();
-      },
-      async delete(id){
-        const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${id}`, {
-          method:'DELETE',
-          headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
-        });
-        if(!r.ok) throw new Error(await r.text());
-      }
-    };
-  }
+const SB_HEADERS = {
+  'apikey': SB_KEY,
+  'Authorization': 'Bearer ' + SB_KEY,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=minimal'
 };
+
+// Simple REST helpers
+async function sbSelect(table){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?select=*&order=updated_at.desc`, {headers: SB_HEADERS});
+  if(!r.ok){ const t=await r.text(); throw new Error(`${table}: ${r.status} ${t}`); }
+  return r.json();
+}
+async function sbUpsert(table, row){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal'},
+    body: JSON.stringify(row)
+  });
+  if(!r.ok){ const t=await r.text(); throw new Error(`${table} upsert: ${r.status} ${t}`); }
+}
+async function sbDelete(table, id){
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, {
+    method: 'DELETE', headers: SB_HEADERS
+  });
+  if(!r.ok){ const t=await r.text(); throw new Error(`${table} delete: ${r.status} ${t}`); }
+}
 
 // ===== SYNC STATUS UI =====
 function showSyncStatus(msg, type='info'){
@@ -819,19 +814,19 @@ function showSyncStatus(msg, type='info'){
   if(!el){
     el = document.createElement('div');
     el.id = 'sync-status';
-    el.style.cssText = 'position:fixed;bottom:70px;right:16px;padding:8px 14px;border-radius:8px;font-size:11px;font-weight:500;z-index:9999;transition:opacity .4s;font-family:Inter,sans-serif;max-width:240px;';
+    el.style.cssText = 'position:fixed;top:70px;right:16px;padding:8px 14px;border-radius:8px;font-size:11px;font-weight:600;z-index:9999;font-family:Inter,sans-serif;max-width:260px;transition:opacity .5s;pointer-events:none;';
     document.body.appendChild(el);
   }
-  const colors = {
-    info:  'background:rgba(99,179,237,0.15);border:1px solid rgba(99,179,237,0.3);color:#63b3ed;',
-    ok:    'background:rgba(72,187,120,0.15);border:1px solid rgba(72,187,120,0.3);color:#48bb78;',
-    error: 'background:rgba(229,62,62,0.15);border:1px solid rgba(229,62,62,0.3);color:#fc8181;',
-    saving:'background:rgba(212,175,55,0.15);border:1px solid rgba(212,175,55,0.3);color:#d4af37;',
+  const styles = {
+    info:   'background:rgba(99,179,237,0.2);border:1px solid rgba(99,179,237,0.5);color:#63b3ed;',
+    ok:     'background:rgba(72,187,120,0.2);border:1px solid rgba(72,187,120,0.5);color:#48bb78;',
+    error:  'background:rgba(229,62,62,0.2);border:1px solid rgba(229,62,62,0.5);color:#fc8181;',
+    saving: 'background:rgba(212,175,55,0.2);border:1px solid rgba(212,175,55,0.5);color:#d4af37;',
   };
-  el.style.cssText += colors[type]||colors.info;
+  el.style.cssText += styles[type] || styles.info;
   el.textContent = msg;
   el.style.opacity = '1';
-  if(type !== 'saving') setTimeout(()=>{ el.style.opacity='0'; }, 3000);
+  if(type !== 'saving') setTimeout(() => { el.style.opacity = '0'; }, 4000);
 }
 
 // ===== LOCAL CACHE =====
@@ -848,56 +843,52 @@ let depositHistory=ld('ft4_deposits',[]);
 
 // ===== PULL FROM SUPABASE =====
 async function pullFromSupabase(){
-  showSyncStatus('⟳ Menyinkronkan data...', 'info');
+  showSyncStatus('⟳ Menyinkronkan...', 'info');
   try {
     const [txRes, accRes, goalRes, tradeRes, wdRes, depRes, budRes] = await Promise.all([
-      (await sb.from('transactions')).select(),
-      (await sb.from('accounts')).select(),
-      (await sb.from('goals')).select(),
-      (await sb.from('trades')).select(),
-      (await sb.from('wd_history')).select(),
-      (await sb.from('deposit_history')).select(),
-      (await sb.from('budgets')).select(),
+      sbSelect('transactions'),
+      sbSelect('accounts'),
+      sbSelect('goals'),
+      sbSelect('trades'),
+      sbSelect('wd_history'),
+      sbSelect('deposit_history'),
+      sbSelect('budgets'),
     ]);
-    transactions  = txRes.map(r=>r.data);
-    accounts      = accRes.map(r=>r.data);
-    goals         = goalRes.map(r=>r.data);
-    trades        = tradeRes.map(r=>r.data);
-    wdHistory     = wdRes.map(r=>r.data);
-    depositHistory= depRes.map(r=>r.data);
-    if(budRes.length>0) budgets = budRes[0].data;
-    // update local cache
-    sv('ft4_tx',transactions);sv('ft4_accounts',accounts);sv('ft4_goals',goals);
-    sv('ft4_trades',trades);sv('ft4_wd',wdHistory);sv('ft4_deposits',depositHistory);sv('ft4_budgets',budgets);
-    showSyncStatus('✓ Data tersinkron', 'ok');
+    transactions   = txRes.map(r=>r.data).filter(Boolean);
+    accounts       = accRes.map(r=>r.data).filter(Boolean);
+    goals          = goalRes.map(r=>r.data).filter(Boolean);
+    trades         = tradeRes.map(r=>r.data).filter(Boolean);
+    wdHistory      = wdRes.map(r=>r.data).filter(Boolean);
+    depositHistory = depRes.map(r=>r.data).filter(Boolean);
+    if(budRes.length > 0 && budRes[0].data) budgets = budRes[0].data;
+    sv('ft4_tx',transactions); sv('ft4_accounts',accounts); sv('ft4_goals',goals);
+    sv('ft4_trades',trades); sv('ft4_wd',wdHistory); sv('ft4_deposits',depositHistory); sv('ft4_budgets',budgets);
+    showSyncStatus('✓ Tersinkron', 'ok');
     render();
   } catch(e) {
-    showSyncStatus('⚠ Offline — pakai data lokal', 'error');
     console.error('Supabase pull error:', e);
+    showSyncStatus('⚠ ' + e.message, 'error');
   }
 }
 
 // ===== PUSH HELPERS =====
 async function pushRecord(table, id, data){
   try {
-    await (await sb.from(table)).upsert({id: String(id), data: data, updated_at: new Date().toISOString()});
+    await sbUpsert(table, {id: String(id), data: data, updated_at: new Date().toISOString()});
+    showSyncStatus('✓ Tersimpan', 'ok');
   } catch(e) {
     console.error('Push error:', table, e);
-    showSyncStatus('⚠ Gagal sync: '+table, 'error');
+    showSyncStatus('⚠ Gagal simpan: ' + e.message, 'error');
   }
 }
 async function deleteRecord(table, id){
-  try {
-    await (await sb.from(table)).delete(String(id));
-  } catch(e) { console.error('Delete error:', table, e); }
+  try { await sbDelete(table, String(id)); }
+  catch(e) { console.error('Delete error:', table, e); }
 }
 async function pushBudgets(){
-  try {
-    await (await sb.from('budgets')).upsert({id:'budgets', data: budgets, updated_at: new Date().toISOString()});
-  } catch(e) { console.error('Push budgets error:', e); }
+  try { await sbUpsert('budgets', {id:'budgets', data: budgets, updated_at: new Date().toISOString()}); }
+  catch(e) { console.error('Push budgets error:', e); }
 }
-
-// Wrapped sv that also pushes to Supabase
 function svSync(key, val, table, id){
   sv(key, val);
   if(table && id !== undefined) pushRecord(table, id, val.find?.(x=>x.id===id)||val);
