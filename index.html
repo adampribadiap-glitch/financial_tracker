@@ -336,10 +336,11 @@ select option{background:var(--surface);}
 
 /* ===== AUTH SCREEN ===== */
 #auth-screen{
-  display:flex;position:fixed;inset:0;z-index:1000;
+  display:none;position:fixed;inset:0;z-index:1000;
   background:var(--bg);
   align-items:center;justify-content:center;
 }
+#auth-screen.show{display:flex;}
 #auth-screen.hidden{display:none!important;}
 .auth-card{
   width:420px;max-width:calc(100vw - 32px);
@@ -1057,7 +1058,7 @@ async function onLoginSuccess(data){
   localStorage.setItem('ft_user', JSON.stringify(data.user));
   localStorage.setItem('ft_expiry', String(expiry));
   updateUserUI();
-  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('auth-screen').classList.remove('show');
   await pullFromSupabase();
 }
 
@@ -1093,7 +1094,7 @@ async function authSignOut(){
   // Reset data
   transactions=[];accounts=[];goals=[];trades=[];wdHistory=[];depositHistory=[];
   // Show auth screen
-  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('auth-screen').classList.add('show');
   document.getElementById('auth-err').classList.remove('show');
   document.getElementById('auth-ok').classList.remove('show');
   document.getElementById('auth-email').value='';
@@ -1137,43 +1138,50 @@ function showForgotPassword(){
 
 // ===== CHECK SESSION ON LOAD =====
 async function checkSession(){
-  const savedToken = localStorage.getItem('ft_token');
-  const savedUser = localStorage.getItem('ft_user');
-  const savedExpiry = localStorage.getItem('ft_expiry');
+  const savedToken   = localStorage.getItem('ft_token');
+  const savedUser    = localStorage.getItem('ft_user');
+  const savedExpiry  = localStorage.getItem('ft_expiry');
   const savedRefresh = localStorage.getItem('ft_refresh');
 
+  // No token at all → show login
   if(!savedToken || !savedUser){
-    document.getElementById('auth-screen').classList.remove('hidden');
+    document.getElementById('auth-screen').classList.add('show');
     return false;
   }
 
-  const now = Date.now();
-  const expiry = parseInt(savedExpiry||'0');
+  const now    = Date.now();
+  const expiry = parseInt(savedExpiry || '0');
 
-  // Token still valid locally — use immediately, no network call
-  if(expiry > now){
-    userToken = savedToken;
-    currentUser = JSON.parse(savedUser);
+  // Has token — check expiry
+  // If no expiry saved (old format) OR expiry still valid → restore session
+  if(!savedExpiry || expiry > now){
+    userToken    = savedToken;
+    currentUser  = JSON.parse(savedUser);
+    // If no expiry, set it now for 7 days
+    if(!savedExpiry){
+      localStorage.setItem('ft_expiry', String(now + 7*24*60*60*1000));
+    }
     updateUserUI();
-    document.getElementById('auth-screen').classList.add('hidden');
-    // Schedule silent refresh 10 min before expiry
-    const msUntilRefresh = Math.max(30000, expiry - now - 10*60*1000);
+    document.getElementById('auth-screen').classList.remove('show');
+    // Schedule silent refresh
+    const msLeft = expiry - now;
+    const msUntilRefresh = Math.max(60000, msLeft - 10*60*1000);
     setTimeout(()=>{ if(userToken) refreshToken(); }, msUntilRefresh);
     return true;
   }
 
-  // Expired — try refresh token silently
-  if(savedRefresh){
+  // Token expired → try refresh
+  if(savedRefresh && savedRefresh !== 'undefined' && savedRefresh !== ''){
     const ok = await refreshToken();
     if(ok){
       updateUserUI();
-      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('show');
       return true;
     }
   }
 
-  // Can't restore session — show login
-  document.getElementById('auth-screen').classList.remove('hidden');
+  // Failed → show login but keep token in storage (user might still have valid refresh)
+  document.getElementById('auth-screen').classList.add('show');
   return false;
 }
 
@@ -2488,6 +2496,15 @@ function prevCard(){ goCard(cardIdx-1); }
   // Remove old format keys that might conflict
   ['ft_tx','ft_budgets','ft_accounts','ft_goals','ft_trades','ft_wd','ft_deposits',
    'ft2_tx','ft2_accounts','ft3_tx','ft3_accounts'].forEach(k=>localStorage.removeItem(k));
+})();
+
+// Immediately hide auth if token exists (prevent flash)
+(function(){
+  const t=localStorage.getItem('ft_token');
+  const u=localStorage.getItem('ft_user');
+  if(t && u){
+    document.getElementById('auth-screen').classList.remove('show');
+  }
 })();
 
 // Init
