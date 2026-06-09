@@ -1050,7 +1050,7 @@ async function onLoginSuccess(data){
   currentUser = data.user;
   userToken = data.access_token;
   // Save token + expiry (1 hour from now)
-  const expiry = Date.now() + 60 * 60 * 1000;
+  const expiry = Date.now() + 7 * 24 * 60 * 60 * 1000;
   localStorage.setItem('ft_token', data.access_token);
   localStorage.setItem('ft_refresh', data.refresh_token||'');
   localStorage.setItem('ft_user', JSON.stringify(data.user));
@@ -1113,7 +1113,7 @@ async function refreshToken(){
     const data = await r.json();
     userToken = data.access_token;
     currentUser = data.user;
-    const expiry = Date.now() + 60 * 60 * 1000;
+    const expiry = Date.now() + 7 * 24 * 60 * 60 * 1000;
     localStorage.setItem('ft_token', data.access_token);
     localStorage.setItem('ft_refresh', data.refresh_token||refresh);
     localStorage.setItem('ft_user', JSON.stringify(data.user));
@@ -1139,25 +1139,30 @@ async function checkSession(){
   const savedToken = localStorage.getItem('ft_token');
   const savedUser = localStorage.getItem('ft_user');
   const savedExpiry = localStorage.getItem('ft_expiry');
+  const savedRefresh = localStorage.getItem('ft_refresh');
 
-  if(savedToken && savedUser){
-    // Check if token is still valid (not expired locally)
-    const now = Date.now();
-    const expiry = parseInt(savedExpiry||'0');
+  if(!savedToken || !savedUser){
+    document.getElementById('auth-screen').classList.remove('hidden');
+    return false;
+  }
 
-    if(expiry > now){
-      // Token still valid locally, use it without network call
-      userToken = savedToken;
-      currentUser = JSON.parse(savedUser);
-      updateUserUI();
-      document.getElementById('auth-screen').classList.add('hidden');
-      // Schedule refresh 5 min before expiry
-      const msUntilRefresh = Math.max(0, expiry - now - 5*60*1000);
-      setTimeout(()=>refreshToken(), msUntilRefresh);
-      return true;
-    }
+  const now = Date.now();
+  const expiry = parseInt(savedExpiry||'0');
 
-    // Token might be expired, try refresh
+  // Token still valid locally — use immediately, no network call
+  if(expiry > now){
+    userToken = savedToken;
+    currentUser = JSON.parse(savedUser);
+    updateUserUI();
+    document.getElementById('auth-screen').classList.add('hidden');
+    // Schedule silent refresh 10 min before expiry
+    const msUntilRefresh = Math.max(30000, expiry - now - 10*60*1000);
+    setTimeout(()=>{ if(userToken) refreshToken(); }, msUntilRefresh);
+    return true;
+  }
+
+  // Expired — try refresh token silently
+  if(savedRefresh){
     const ok = await refreshToken();
     if(ok){
       updateUserUI();
@@ -1165,7 +1170,8 @@ async function checkSession(){
       return true;
     }
   }
-  // No session, show login
+
+  // Can't restore session — show login
   document.getElementById('auth-screen').classList.remove('hidden');
   return false;
 }
