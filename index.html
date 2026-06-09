@@ -1711,11 +1711,13 @@ function importData(e){
   const file=e.target.files[0];if(!file)return;
   const status=document.getElementById('import-status');
   const reader=new FileReader();
-  reader.onload=function(ev){
+  reader.onload=async function(ev){
     try{
       const data=JSON.parse(ev.target.result);
       if(!data.transactions&&!data.trades){throw new Error('Format file tidak valid');}
-      if(!confirm('Import akan menimpa semua data yang ada sekarang. Lanjutkan?')){e.target.value='';return;}
+      if(!confirm('Import akan menimpa semua data. Lanjutkan?')){e.target.value='';return;}
+
+      // 1. Load into memory & localStorage
       if(data.transactions){transactions=data.transactions;sv('ft4_tx',transactions);}
       if(data.budgets){budgets=data.budgets;sv('ft4_budgets',budgets);}
       if(data.accounts){accounts=data.accounts;sv('ft4_accounts',accounts);}
@@ -1723,23 +1725,51 @@ function importData(e){
       if(data.trades){trades=data.trades;sv('ft4_trades',trades);}
       if(data.wdHistory){wdHistory=data.wdHistory;sv('ft4_wd',wdHistory);}
       if(data.depositHistory){depositHistory=data.depositHistory;sv('ft4_deposits',depositHistory);}
-      status.style.display='block';
-      status.style.color='var(--green)';
-      status.textContent='✓ Import berhasil! Mengupload ke cloud...';
       render();
-      // Push imported data to Supabase
-      pushAllToSupabase().then(()=>{
-        status.textContent='✓ Import & sync berhasil!';
-        showSyncStatus('✓ Data diimport & tersinkron', 'ok');
-        setTimeout(()=>{status.style.display='none';},4000);
-      }).catch(err=>{
-        status.textContent='✓ Import lokal berhasil (sync gagal: '+err.message+')';
-        setTimeout(()=>{status.style.display='none';},5000);
-      });
+
+      // 2. Push to Supabase with progress
+      status.style.display='block';
+      status.style.color='var(--amber)';
+
+      const tables = [
+        {name:'transactions',  arr:transactions},
+        {name:'accounts',      arr:accounts},
+        {name:'goals',         arr:goals},
+        {name:'trades',        arr:trades},
+        {name:'wd_history',    arr:wdHistory},
+        {name:'deposit_history',arr:depositHistory},
+      ];
+
+      let done=0;
+      const total=tables.reduce((a,t)=>a+t.arr.length,0)+1;
+
+      for(const t of tables){
+        if(!t.arr.length){done++;continue;}
+        status.textContent=`⟳ Upload ${t.name} (${t.arr.length} data)...`;
+        // push in parallel batches of 20
+        const chunks=[];
+        for(let i=0;i<t.arr.length;i+=20) chunks.push(t.arr.slice(i,i+20));
+        for(const chunk of chunks){
+          await Promise.all(chunk.map(r=>
+            sbUpsert(t.name,{id:String(r.id),data:r,updated_at:new Date().toISOString()})
+          ));
+        }
+        done+=t.arr.length;
+        status.textContent=`⟳ Upload ${Math.round(done/total*100)}%...`;
+      }
+      // push budgets
+      await sbUpsert('budgets',{id:'budgets',data:budgets,updated_at:new Date().toISOString()});
+
+      status.style.color='var(--green)';
+      status.textContent='✓ Import & sync ke Supabase berhasil!';
+      showSyncStatus('✓ Data tersinkron ke cloud', 'ok');
+      setTimeout(()=>{status.style.display='none';},5000);
+
     }catch(err){
       status.style.display='block';
       status.style.color='var(--red2)';
       status.textContent='✗ Gagal: '+err.message;
+      console.error('Import error:',err);
     }
     e.target.value='';
   };
