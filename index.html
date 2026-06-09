@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Financial Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
+<style>
+.lucide{width:18px;height:18px;stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+.lucide-lg{width:22px;height:22px;}
+.lucide-sm{width:15px;height:15px;}
+</style>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -51,7 +57,7 @@ body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min
 .nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-radius:var(--radius-sm);transition:all .15s;margin:1px 0;}
 .nav-item:hover{color:var(--text);background:var(--surface2);}
 .nav-item.active{color:var(--blue2);background:var(--blue-bg);font-weight:600;}
-.nav-icon{width:30px;height:30px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;transition:background .15s;}
+.nav-icon{width:30px;height:30px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;transition:background .15s;} .nav-icon svg{width:16px;height:16px;}
 .nav-item.active .nav-icon{background:var(--blue-bg);}
 .sidebar-bottom{padding:16px 12px;border-top:1px solid var(--border);}
 .theme-switch{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:50px;padding:4px;margin-bottom:14px;}
@@ -80,7 +86,7 @@ body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min
 .profile-role{font-size:10px;color:var(--text3);}
 .profile-menu{display:none;position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px;min-width:180px;box-shadow:var(--shadow);z-index:100;}
 .profile-area.open .profile-menu{display:block;}
-.profile-menu-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--radius-xs);font-size:13px;color:var(--text2);cursor:pointer;transition:all .12s;}
+.profile-menu-item{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--radius-xs);font-size:13px;color:var(--text2);cursor:pointer;transition:all .12s;} .profile-menu-item svg{flex-shrink:0;}
 .profile-menu-item:hover{background:var(--surface2);color:var(--text);}
 .main-btn{background:linear-gradient(135deg,var(--blue),var(--blue3));color:#fff;border:none;border-radius:50px;padding:9px 20px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(59,130,246,0.4);transition:all .15s;display:flex;align-items:center;gap:6px;}
 .main-btn:hover{opacity:.9;box-shadow:0 6px 18px rgba(59,130,246,0.5);}
@@ -98,7 +104,7 @@ body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;transition:all .2s;cursor:default;}
 .stat-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow);}
 .stat-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.stat-icon-wrap{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.stat-icon-wrap{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;} .stat-icon-wrap svg{width:22px;height:22px;}
 .stat-dots{color:var(--text3);font-size:18px;cursor:pointer;line-height:1;}
 .stat-label{font-size:12px;color:var(--text2);font-weight:500;margin-bottom:6px;}
 .stat-val{font-family:'Poppins',monospace;font-size:24px;font-weight:600;color:var(--text);letter-spacing:-.5px;margin-bottom:5px;}
@@ -117,27 +123,54 @@ body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min
 /* CHART GRID */
 .dash-grid{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-bottom:20px;}
 
-/* BANK CARD */
-.bank-card{background:linear-gradient(135deg,#1a3a6b,#0f2d5a);border-radius:var(--radius);padding:22px;color:#fff;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(59,130,246,0.25);}
-.bank-card::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:rgba(59,130,246,0.15);}
-.bank-card::after{content:'';position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;border-radius:50%;background:rgba(99,179,255,0.08);}
-.bank-card-name{font-size:11px;font-weight:700;letter-spacing:.15em;opacity:.7;text-transform:uppercase;margin-bottom:3px;}
-.bank-card-title{font-size:18px;font-weight:700;letter-spacing:.5px;margin-bottom:18px;}
-.bank-card-num{font-family:'Poppins',monospace;font-size:16px;letter-spacing:.15em;margin-bottom:18px;opacity:.9;}
-.bank-card-row{display:flex;align-items:flex-end;justify-content:space-between;}
-.bank-card-field-label{font-size:9px;opacity:.6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;}
-.bank-card-field-val{font-size:13px;font-weight:600;letter-spacing:.05em;}
-.bank-chip{width:36px;height:28px;border-radius:5px;background:linear-gradient(135deg,rgba(255,215,0,0.6),rgba(255,180,0,0.4));position:absolute;top:22px;right:22px;}
-.bank-bal-section{margin-top:20px;padding-top:18px;border-top:1px solid rgba(255,255,255,0.1);}
-.bank-bal-label{font-size:11px;opacity:.6;margin-bottom:4px;}
-.bank-bal-amount{font-family:'Poppins',monospace;font-size:26px;font-weight:700;letter-spacing:-.5px;}
-.bank-bal-sub{font-size:11px;opacity:.5;margin-top:2px;}
-.bank-status-row{display:flex;gap:20px;margin-top:12px;}
-.bank-status-item{font-size:11px;opacity:.6;}
-.bank-status-val{font-size:13px;font-weight:600;opacity:.9;margin-top:1px;}
-.bank-status-val.active{color:#4ade80;}
-.add-card-btn{width:100%;margin-top:16px;padding:12px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
-.add-card-btn:hover{background:rgba(255,255,255,0.18);}
+/* BANK CARD CAROUSEL */
+.card-carousel-wrap{position:relative;width:100%;margin-bottom:0;}
+.card-carousel{position:relative;height:210px;cursor:grab;user-select:none;}
+.card-carousel:active{cursor:grabbing;}
+.atm-card{
+  position:absolute;top:0;left:0;right:0;
+  width:100%;height:210px;
+  border-radius:18px;
+  padding:22px 24px;
+  color:#fff;
+  transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s,box-shadow .35s;
+  overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+  /* ATM card ratio ~85.6×53.98mm → ~1.586:1 */
+}
+.atm-card::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.08);}
+.atm-card::after{content:'';position:absolute;bottom:-40px;left:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.05);}
+.atm-card.active{transform:translateY(0) scale(1);opacity:1;z-index:3;}
+.atm-card.prev{transform:translateY(12px) scale(0.95);opacity:0.6;z-index:2;}
+.atm-card.prev2{transform:translateY(22px) scale(0.90);opacity:0.3;z-index:1;}
+.atm-card.hidden{opacity:0;z-index:0;pointer-events:none;}
+/* Card gradient themes */
+.atm-card-0{background:linear-gradient(135deg,#1a3a6b 0%,#0f2d5a 60%,#1a4a8a 100%);}
+.atm-card-1{background:linear-gradient(135deg,#1a4a3a 0%,#0f3028 60%,#1a5a4a 100%);}
+.atm-card-2{background:linear-gradient(135deg,#4a1a6b 0%,#2d0f5a 60%,#5a1a7a 100%);}
+.atm-card-3{background:linear-gradient(135deg,#6b3a1a 0%,#5a2d0f 60%,#8a4a1a 100%);}
+.atm-chip{width:38px;height:30px;border-radius:6px;background:linear-gradient(135deg,rgba(255,210,0,0.7),rgba(255,170,0,0.5));position:relative;overflow:hidden;}
+.atm-chip::after{content:'';position:absolute;inset:4px;border-radius:3px;border:1px solid rgba(255,200,0,0.4);}
+.atm-bank-label{font-size:9px;font-weight:700;letter-spacing:.18em;opacity:.6;text-transform:uppercase;margin-bottom:2px;}
+.atm-bank-name{font-size:17px;font-weight:700;letter-spacing:.3px;margin-bottom:14px;}
+.atm-num{font-family:'Poppins',sans-serif;font-size:15px;letter-spacing:.22em;opacity:.85;margin-bottom:16px;}
+.atm-footer{display:flex;align-items:flex-end;justify-content:space-between;}
+.atm-bal-label{font-size:9px;opacity:.55;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;}
+.atm-bal-amount{font-size:20px;font-weight:700;letter-spacing:-.3px;text-shadow:0 2px 8px rgba(0,0,0,0.3);}
+.atm-bal-sub{font-size:9px;opacity:.5;margin-top:1px;}
+.atm-status{text-align:right;}
+.atm-status-label{font-size:9px;opacity:.55;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.atm-status-val{font-size:12px;font-weight:600;}
+.atm-status-val.active-s{color:#4ade80;}
+/* Dots */
+.card-dots{display:flex;gap:6px;justify-content:center;margin-top:14px;}
+.card-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);transition:all .2s;cursor:pointer;}
+.card-dot.active{width:18px;border-radius:3px;background:var(--blue2);}
+/* Nav arrows */
+.card-nav-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:10px;}
+.card-nav-btn{width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text3);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.card-nav-btn:hover{background:var(--blue-bg);color:var(--blue2);border-color:var(--blue-border);}
+
 
 /* TX LIST */
 .tx-list{display:flex;flex-direction:column;}
@@ -297,8 +330,46 @@ select option{background:var(--surface);}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
 
-/* ===== MOBILE ===== */
-.bottom-nav{display:none;}
+/* ===== AUTH SCREEN ===== */
+#auth-screen{
+  display:none;position:fixed;inset:0;z-index:1000;
+  background:var(--bg);
+  align-items:center;justify-content:center;
+}
+#auth-screen.show{display:flex;}
+.auth-card{
+  width:420px;max-width:calc(100vw - 32px);
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:24px;padding:40px 36px;
+  box-shadow:0 24px 64px rgba(0,0,0,0.5);
+}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;justify-content:center;}
+.auth-logo-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--blue),var(--blue3));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 16px rgba(59,130,246,0.4);}
+.auth-logo-name{font-size:20px;font-weight:700;letter-spacing:-.4px;}
+.auth-title{font-size:22px;font-weight:700;text-align:center;margin-bottom:6px;}
+.auth-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:28px;}
+.auth-tabs{display:flex;gap:0;background:var(--surface2);border-radius:var(--radius-sm);padding:4px;margin-bottom:24px;}
+.auth-tab{flex:1;padding:8px;border-radius:var(--radius-xs);font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;color:var(--text3);border:none;background:transparent;font-family:'Poppins',sans-serif;}
+.auth-tab.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,0.4);}
+.auth-form{display:flex;flex-direction:column;gap:14px;}
+.auth-input-wrap{position:relative;}
+.auth-input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--text3);}
+.auth-input{width:100%;padding:11px 14px 11px 40px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Poppins',sans-serif;font-size:13px;outline:none;transition:border .15s,box-shadow .15s;}
+.auth-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-bg);}
+.auth-input::placeholder{color:var(--text3);}
+.auth-btn{width:100%;padding:13px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--blue),var(--blue3));color:#fff;border:none;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(59,130,246,0.35);transition:all .15s;margin-top:4px;}
+.auth-btn:hover{opacity:.9;box-shadow:0 6px 18px rgba(59,130,246,0.45);}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed;}
+.auth-divider{text-align:center;font-size:12px;color:var(--text3);position:relative;margin:4px 0;}
+.auth-err{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;display:none;}
+.auth-err.show{display:block;}
+.auth-ok{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;display:none;}
+.auth-ok.show{display:block;}
+
+/* USER BADGE in topbar */
+.user-badge{display:flex;align-items:center;gap:6px;}
+.user-badge-email{font-size:11px;color:var(--text3);}
+
 @media(max-width:768px){
   .sidebar{display:none;}
   .layout{display:block;}
@@ -319,19 +390,64 @@ select option{background:var(--surface);}
   .stat-val{font-size:18px;}
   .bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:100;padding:8px 0 max(8px,env(safe-area-inset-bottom));}
   .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 2px;cursor:pointer;color:var(--text3);font-size:9px;font-weight:600;transition:all .15s;border:none;background:none;font-family:'Poppins',sans-serif;}
-  .bn-icon{font-size:20px;line-height:1;}
+  .bn-icon{font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;width:24px;height:24px;} .bn-icon svg{width:22px;height:22px;}
   .bn-item.active{color:var(--blue2);}
 }
 </style>
 </head>
 <body>
+<!-- ===== AUTH SCREEN ===== -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon"><svg class="lucide" style="width:20px;height:20px;color:#fff" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+      <div class="auth-logo-name">FinTracker</div>
+    </div>
+    <div class="auth-title" id="auth-title">Welcome back</div>
+    <div class="auth-sub" id="auth-sub">Sign in to access your financial data</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-ok" id="auth-ok"></div>
+
+    <div class="auth-form">
+      <div id="auth-name-wrap" style="display:none;">
+        <div class="auth-input-wrap">
+          <span class="auth-input-icon"><svg class="lucide" style="width:16px;height:16px" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <input class="auth-input" id="auth-name" type="text" placeholder="Full name">
+        </div>
+      </div>
+      <div class="auth-input-wrap">
+        <span class="auth-input-icon"><svg class="lucide" style="width:16px;height:16px" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+        <input class="auth-input" id="auth-email" type="email" placeholder="Email address" onkeydown="if(event.key==='Enter')authSubmit()">
+      </div>
+      <div class="auth-input-wrap">
+        <span class="auth-input-icon"><svg class="lucide" style="width:16px;height:16px" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        <input class="auth-input" id="auth-password" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')authSubmit()">
+      </div>
+      <div id="auth-confirm-wrap" style="display:none;">
+        <div class="auth-input-wrap">
+          <span class="auth-input-icon"><svg class="lucide" style="width:16px;height:16px" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <input class="auth-input" id="auth-confirm" type="password" placeholder="Confirm password" onkeydown="if(event.key==='Enter')authSubmit()">
+        </div>
+      </div>
+      <button class="auth-btn" id="auth-btn" onclick="authSubmit()">Sign In</button>
+      <div style="text-align:center;font-size:12px;color:var(--text3);cursor:pointer;" onclick="showForgotPassword()">Forgot password?</div>
+    </div>
+  </div>
+</div>
+
 <div class="layout">
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo-area">
     <div class="logo-wrap">
-      <div class="logo-box">💰</div>
+      <div class="logo-box"><svg class="lucide" style="width:20px;height:20px;color:#fff" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
       <div>
         <div class="logo-name">FinTracker</div>
         <div class="logo-sub">Personal Finance</div>
@@ -340,25 +456,25 @@ select option{background:var(--surface);}
   </div>
   <nav class="nav">
     <div class="nav-section">Overview</div>
-    <div class="nav-item active" data-view="dashboard"><div class="nav-icon">📊</div>Dashboard</div>
-    <div class="nav-item" data-view="transactions"><div class="nav-icon">📋</div>Transactions</div>
+    <div class="nav-item active" data-view="dashboard"><div class="nav-icon"><svg class="lucide" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>Dashboard</div>
+    <div class="nav-item" data-view="transactions"><div class="nav-icon"><svg class="lucide" viewBox="0 0 24 24"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/><path d="m16 19 2 2 4-4"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>Transactions</div>
     <div class="nav-section">Finance</div>
-    <div class="nav-item" data-view="budget"><div class="nav-icon">🎯</div>Planning</div>
-    <div class="nav-item" data-view="savings"><div class="nav-icon">🏦</div>Savings</div>
-    <div class="nav-item" data-view="goals"><div class="nav-icon">🏆</div>Goals</div>
+    <div class="nav-item" data-view="budget"><div class="nav-icon"><svg class="lucide" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/></svg></div>Planning</div>
+    <div class="nav-item" data-view="savings"><div class="nav-icon"><svg class="lucide" viewBox="0 0 24 24"><path d="M3 9a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h18"/><path d="M7 15h.01M12 15h.01"/></svg></div>Savings</div>
+    <div class="nav-item" data-view="goals"><div class="nav-icon"><svg class="lucide" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>Goals</div>
     <div class="nav-section">Trading</div>
-    <div class="nav-item" data-view="trading"><div class="nav-icon">📈</div>Trade Log</div>
-    <div class="nav-item" data-view="tradingstats"><div class="nav-icon">📉</div>Statistics</div>
+    <div class="nav-item" data-view="trading"><div class="nav-icon"><svg class="lucide" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>Trade Log</div>
+    <div class="nav-item" data-view="tradingstats"><div class="nav-icon"><svg class="lucide" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>Statistics</div>
   </nav>
   <div class="sidebar-bottom">
     <!-- THEME SWITCH (like CardWell) -->
     <div class="theme-switch" id="themeSwitcher">
-      <button class="theme-opt" id="themeLight" onclick="setTheme('light')">☀️ Light</button>
-      <button class="theme-opt active" id="themeDark" onclick="setTheme('dark')">🌙 Dark</button>
+      <button class="theme-opt" id="themeLight" onclick="setTheme('light')"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> Light</button>
+      <button class="theme-opt active" id="themeDark" onclick="setTheme('dark')"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Dark</button>
     </div>
     <div class="sidebar-actions">
-      <button class="btn btn-primary btn-sm" onclick="exportData()">⬇ Export</button>
-      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-input').click()">⬆ Import</button>
+      <button class="btn btn-primary btn-sm" onclick="exportData()"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export</button>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-input').click()"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import</button>
       <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(event)">
       <div id="import-status" style="font-size:11px;display:none;margin-top:2px;"></div>
     </div>
@@ -371,7 +487,7 @@ select option{background:var(--surface);}
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-search">
-      <span style="color:var(--text3);font-size:14px;">🔍</span>
+      <span style="color:var(--text3)"><svg class="lucide" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
       <input placeholder="Search here...">
     </div>
     <div class="topbar-right">
@@ -389,15 +505,17 @@ select option{background:var(--surface);}
         </div>
         <span style="color:var(--text3);font-size:11px;">▾</span>
         <div class="profile-menu" id="profileMenu">
-          <div class="profile-menu-item" onclick="pullFromSupabase();toggleProfileMenu()">⟳ &nbsp;Sync Data</div>
-          <div class="profile-menu-item" onclick="exportData();toggleProfileMenu()">⬇ &nbsp;Export Data</div>
-          <div class="profile-menu-item" onclick="document.getElementById('import-input').click();toggleProfileMenu()">⬆ &nbsp;Import Data</div>
+          <div class="profile-menu-item" onclick="pullFromSupabase();toggleProfileMenu()"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sync Data</div>
+          <div class="profile-menu-item" onclick="exportData();toggleProfileMenu()"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Data</div>
+          <div class="profile-menu-item" onclick="document.getElementById('import-input').click();toggleProfileMenu()"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import Data</div>
           <div style="height:1px;background:var(--border);margin:6px 0;"></div>
-          <div class="profile-menu-item" onclick="setTheme('light');toggleProfileMenu()">☀️ &nbsp;Light Mode</div>
-          <div class="profile-menu-item" onclick="setTheme('dark');toggleProfileMenu()">🌙 &nbsp;Dark Mode</div>
+          <div class="profile-menu-item" onclick="setTheme('light');toggleProfileMenu()"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> Light Mode</div>
+          <div class="profile-menu-item" onclick="setTheme('dark');toggleProfileMenu()"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Dark Mode</div>
+          <div style="height:1px;background:var(--border);margin:6px 0;"></div>
+          <div class="profile-menu-item" style="color:var(--red);" onclick="authSignOut()"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out</div>
         </div>
       </div>
-      <button class="main-btn" id="mainBtn" data-action="openModal('tx')">+ Add New</button>
+      <button class="main-btn" id="mainBtn" data-action="openModal('tx')"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add New</button>
     </div>
   </div>
 
@@ -406,7 +524,7 @@ select option{background:var(--surface);}
     <div class="stats-row g4" style="margin-top:4px;">
       <div class="stat-card">
         <div class="stat-card-header">
-          <div class="stat-icon-wrap" style="background:var(--blue-bg);">💳</div>
+          <div class="stat-icon-wrap" style="background:var(--blue-bg);color:var(--blue2)"><svg class="lucide lucide-lg" viewBox="0 0 24 24"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4z"/></svg></div>
           <span class="stat-dots">···</span>
         </div>
         <div class="stat-label">Balance</div>
@@ -415,7 +533,7 @@ select option{background:var(--surface);}
       </div>
       <div class="stat-card">
         <div class="stat-card-header">
-          <div class="stat-icon-wrap" style="background:var(--green-bg);">📥</div>
+          <div class="stat-icon-wrap" style="background:var(--green-bg);color:var(--green)"><svg class="lucide lucide-lg" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
           <span class="stat-dots">···</span>
         </div>
         <div class="stat-label">Income</div>
@@ -424,7 +542,7 @@ select option{background:var(--surface);}
       </div>
       <div class="stat-card">
         <div class="stat-card-header">
-          <div class="stat-icon-wrap" style="background:var(--teal-bg);">🏦</div>
+          <div class="stat-icon-wrap" style="background:var(--teal-bg);color:var(--teal)"><svg class="lucide lucide-lg" viewBox="0 0 24 24"><line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="5 10 5 3 19 3 19 10"/><line x1="9" y1="21" x2="9" y2="10"/><line x1="15" y1="21" x2="15" y2="10"/></svg></div>
           <span class="stat-dots">···</span>
         </div>
         <div class="stat-label">Savings</div>
@@ -433,7 +551,7 @@ select option{background:var(--surface);}
       </div>
       <div class="stat-card">
         <div class="stat-card-header">
-          <div class="stat-icon-wrap" style="background:var(--red-bg);">📤</div>
+          <div class="stat-icon-wrap" style="background:var(--red-bg);color:var(--red)"><svg class="lucide lucide-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
           <span class="stat-dots">···</span>
         </div>
         <div class="stat-label">Expenses</div>
@@ -467,32 +585,30 @@ select option{background:var(--surface);}
 
       <!-- RIGHT COLUMN: Bank Card + Trading Stats -->
       <div style="display:flex;flex-direction:column;gap:16px;">
-        <!-- BANK CARD -->
-        <div class="bank-card" id="bankCardDisplay">
-          <div class="bank-chip"></div>
-          <div class="bank-card-name">Bank Name</div>
-          <div class="bank-card-title" id="bc-bank-name">—</div>
-          <div class="bank-card-num" id="bc-num">•••• •••• •••• ••••</div>
-          <div class="bank-bal-section">
-            <div class="bank-bal-label">Your Balance</div>
-            <div class="bank-bal-amount" id="bc-balance">Rp 0</div>
-            <div class="bank-bal-sub">Total / All accounts</div>
-          </div>
-          <div class="bank-status-row">
-            <div>
-              <div class="bank-status-item">Currency</div>
-              <div class="bank-status-val">IDR / Rupiah</div>
-            </div>
-            <div>
-              <div class="bank-status-item">Status</div>
-              <div class="bank-status-val active">Active</div>
-            </div>
-            <div>
-              <div class="bank-status-item">Accounts</div>
-              <div class="bank-status-val" id="bc-acc-count">0</div>
+        <!-- BANK CARD CAROUSEL -->
+        <div class="card-carousel-wrap">
+          <div class="card-carousel" id="cardCarousel">
+            <!-- Cards injected by JS -->
+            <div class="atm-card atm-card-0 active" id="emptyCard">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;position:relative;z-index:1;">
+                <div><div class="atm-bank-label">Bank Name</div><div class="atm-bank-name">No Account</div></div>
+                <div class="atm-chip"></div>
+              </div>
+              <div class="atm-num" style="position:relative;z-index:1;">•••• •••• •••• ••••</div>
+              <div class="atm-footer" style="position:relative;z-index:1;">
+                <div><div class="atm-bal-label">Balance</div><div class="atm-bal-amount">Rp 0</div></div>
+                <div class="atm-status"><div class="atm-status-label">Status</div><div class="atm-status-val active-s">Active</div></div>
+              </div>
             </div>
           </div>
-          <button class="add-card-btn" onclick="switchView('savings')">+ Add new account</button>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+            <div class="card-dots" id="cardDots"></div>
+            <div class="card-nav-btns">
+              <button class="card-nav-btn" onclick="prevCard()">←</button>
+              <button class="card-nav-btn" onclick="nextCard()">→</button>
+            </div>
+          </div>
+          <button style="width:100%;margin-top:10px;padding:11px;border-radius:var(--radius-sm);background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;" onclick="switchView('savings')" onmouseover="this.style.borderColor='var(--blue-border)';this.style.color='var(--blue2)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">+ Add new account</button>
         </div>
 
         <!-- TRADING SUMMARY -->
@@ -633,7 +749,7 @@ select option{background:var(--surface);}
   <div class="view" id="view-tradingstats">
     <div class="stats-row g5">
       <div class="stat-card"><div class="stat-label">Total Trades</div><div class="stat-val" id="ts-total">0</div><div class="stat-sub" id="ts-closed">0 closed</div></div>
-      <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-val" style="color:var(--green)" id="ts-wr">0%</div><div class="stat-sub" id="ts-wl">0W/0L</div></div>
+      <div class="stat-card"><div class="stat-label"><svg class="lucide" style="width:14px;height:14px;color:var(--green)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Win Rate</div><div class="stat-val" style="color:var(--green)" id="ts-wr">0%</div><div class="stat-sub" id="ts-wl">0W/0L</div></div>
       <div class="stat-card"><div class="stat-label">Avg R:R</div><div class="stat-val" style="color:var(--blue2)" id="ts-rr">0</div><div class="stat-sub">closed trades</div></div>
       <div class="stat-card"><div class="stat-label">Total Profit</div><div class="stat-val" style="color:var(--green)" id="ts-profit">$0.00</div><div class="stat-sub" id="ts-best">Best: —</div></div>
       <div class="stat-card"><div class="stat-label">Total Loss</div><div class="stat-val" style="color:var(--red)" id="ts-loss">$0.00</div><div class="stat-sub" id="ts-worst">Worst: —</div></div>
@@ -649,11 +765,11 @@ select option{background:var(--surface);}
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <button class="bn-item active" data-view="dashboard"><span class="bn-icon">📊</span>Home</button>
-  <button class="bn-item" data-view="transactions"><span class="bn-icon">📋</span>Tx</button>
-  <button class="bn-item" data-view="trading"><span class="bn-icon">📈</span>Trade</button>
-  <button class="bn-item" data-view="savings"><span class="bn-icon">🏦</span>Savings</button>
-  <button class="bn-item" id="menuBtn"><span class="bn-icon">☰</span>Menu</button>
+  <button class="bn-item active" data-view="dashboard"><span class="bn-icon"><svg class="lucide" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>Home</button>
+  <button class="bn-item" data-view="transactions"><span class="bn-icon"><svg class="lucide" viewBox="0 0 24 24"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/><path d="m16 19 2 2 4-4"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Tx</button>
+  <button class="bn-item" data-view="trading"><span class="bn-icon"><svg class="lucide" viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Trade</button>
+  <button class="bn-item" data-view="savings"><span class="bn-icon"><svg class="lucide" viewBox="0 0 24 24" style="width:22px;height:22px;"><path d="M3 9a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M3 9h18"/><path d="M7 15h.01M12 15h.01"/></svg></span>Saving</button>
+  <button class="bn-item" id="menuBtn"><span class="bn-icon"><svg class="lucide" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span>Menu</button>
 </nav>
 
 <!-- MOBILE MENU -->
@@ -666,12 +782,12 @@ select option{background:var(--surface);}
       <button class="btn btn-secondary" style="justify-content:flex-start;" data-view="tradingstats" data-closemenu="1">📉 Trading Stats</button>
     </div>
     <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;flex-direction:column;gap:7px;">
-      <button class="btn btn-primary" id="mobileExportBtn">⬇ Export Data</button>
-      <button class="btn btn-secondary" id="mobileImportBtn">⬆ Import Data</button>
-      <button class="btn btn-secondary" onclick="pullFromSupabase()">⟳ Sync Data</button>
+      <button class="btn btn-primary" id="mobileExportBtn"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Data</button>
+      <button class="btn btn-secondary" id="mobileImportBtn"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import Data</button>
+      <button class="btn btn-secondary" onclick="pullFromSupabase()"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sync Data</button>
       <div class="theme-switch" style="margin-top:4px;">
-        <button class="theme-opt" onclick="setTheme('light')">☀️ Light</button>
-        <button class="theme-opt active" onclick="setTheme('dark')">🌙 Dark</button>
+        <button class="theme-opt" onclick="setTheme('light')"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> Light</button>
+        <button class="theme-opt active" onclick="setTheme('dark')"><svg class="lucide lucide-sm" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Dark</button>
       </div>
     </div>
     <div class="modal-footer" style="margin-top:14px;padding-top:12px;">
@@ -820,30 +936,228 @@ let activeSavId=null,activeSavType=null,editingTxId=null,editingTradeId=null,edi
 // ===== SUPABASE CONFIG =====
 const SB_URL = 'https://tgnrtnsasowmecamynnq.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnbnJ0bnNhc293bWVjYW15bm5xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NjQ1MjQsImV4cCI6MjA5NjU0MDUyNH0.AlFLn9oiKZkwVAam2V9hF-QbaNWNMjvghtszDfz6XqU';
-const SB_HEADERS = {
-  'apikey': SB_KEY,
-  'Authorization': 'Bearer ' + SB_KEY,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=minimal'
-};
+
+let currentUser = null;
+let userToken = null;
+
+function getSBHeaders(){
+  const token = userToken || SB_KEY;
+  return {
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + token,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal'
+  };
+}
+
+// ===== AUTH FUNCTIONS =====
+let authMode = 'login';
+
+function switchAuthTab(mode){
+  authMode = mode;
+  document.getElementById('tab-login').classList.toggle('active', mode==='login');
+  document.getElementById('tab-register').classList.toggle('active', mode==='register');
+  document.getElementById('auth-title').textContent = mode==='login'?'Welcome back':'Create account';
+  document.getElementById('auth-sub').textContent = mode==='login'?'Sign in to access your financial data':'Join FinTracker today';
+  document.getElementById('auth-btn').textContent = mode==='login'?'Sign In':'Create Account';
+  document.getElementById('auth-name-wrap').style.display = mode==='register'?'block':'none';
+  document.getElementById('auth-confirm-wrap').style.display = mode==='register'?'block':'none';
+  document.getElementById('auth-err').classList.remove('show');
+  document.getElementById('auth-ok').classList.remove('show');
+}
+
+function showAuthError(msg){
+  const el = document.getElementById('auth-err');
+  el.textContent = msg; el.classList.add('show');
+  document.getElementById('auth-ok').classList.remove('show');
+}
+function showAuthOk(msg){
+  const el = document.getElementById('auth-ok');
+  el.textContent = msg; el.classList.add('show');
+  document.getElementById('auth-err').classList.remove('show');
+}
+
+async function authSubmit(){
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const btn = document.getElementById('auth-btn');
+  if(!email||!password){showAuthError('Email dan password wajib diisi.');return;}
+
+  btn.disabled = true;
+  btn.textContent = authMode==='login'?'Signing in…':'Creating account…';
+
+  try {
+    if(authMode==='login'){
+      const r = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`,{
+        method:'POST',
+        headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({email,password})
+      });
+      const data = await r.json();
+      if(!r.ok) throw new Error(data.error_description||data.msg||'Login gagal');
+      await onLoginSuccess(data);
+    } else {
+      const name = document.getElementById('auth-name').value.trim();
+      const confirm = document.getElementById('auth-confirm').value;
+      if(!name){showAuthError('Nama wajib diisi.');btn.disabled=false;btn.textContent='Create Account';return;}
+      if(password!==confirm){showAuthError('Password tidak cocok.');btn.disabled=false;btn.textContent='Create Account';return;}
+      if(password.length<6){showAuthError('Password minimal 6 karakter.');btn.disabled=false;btn.textContent='Create Account';return;}
+      const r = await fetch(`${SB_URL}/auth/v1/signup`,{
+        method:'POST',
+        headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+        body:JSON.stringify({email,password,data:{name}})
+      });
+      const data = await r.json();
+      if(!r.ok) throw new Error(data.error_description||data.msg||'Registrasi gagal');
+      if(data.access_token){
+        await onLoginSuccess(data);
+      } else {
+        showAuthOk('✓ Akun dibuat! Cek email untuk konfirmasi, lalu login.');
+        switchAuthTab('login');
+      }
+    }
+  } catch(e){
+    showAuthError(e.message);
+  }
+  btn.disabled=false;
+  btn.textContent=authMode==='login'?'Sign In':'Create Account';
+}
+
+async function onLoginSuccess(data){
+  currentUser = data.user;
+  userToken = data.access_token;
+  // Save token to localStorage
+  localStorage.setItem('ft_token', data.access_token);
+  localStorage.setItem('ft_refresh', data.refresh_token||'');
+  localStorage.setItem('ft_user', JSON.stringify(data.user));
+  // Update UI
+  updateUserUI();
+  // Hide auth screen, show app
+  document.getElementById('auth-screen').classList.remove('show');
+  // Pull user data
+  await pullFromSupabase();
+}
+
+function updateUserUI(){
+  if(!currentUser) return;
+  const email = currentUser.email||'';
+  const name = currentUser.user_metadata?.name||email.split('@')[0]||'User';
+  // Update profile area
+  const pname = document.getElementById('profileArea');
+  if(pname){
+    const nameEl = pname.querySelector('.profile-name');
+    if(nameEl) nameEl.textContent = name;
+    const roleEl = pname.querySelector('.profile-role');
+    if(roleEl) roleEl.textContent = email;
+  }
+  // Update sidebar greeting
+  const greet = document.querySelector('.sidebar-greeting-name');
+  if(greet) greet.textContent = name+' 👋';
+}
+
+async function authSignOut(){
+  try {
+    await fetch(`${SB_URL}/auth/v1/logout`,{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+(userToken||SB_KEY)}
+    });
+  } catch(e){}
+  currentUser = null; userToken = null;
+  localStorage.removeItem('ft_token');
+  localStorage.removeItem('ft_refresh');
+  localStorage.removeItem('ft_user');
+  // Reset data
+  transactions=[];accounts=[];goals=[];trades=[];wdHistory=[];depositHistory=[];
+  // Show auth screen
+  document.getElementById('auth-screen').classList.add('show');
+  document.getElementById('auth-err').classList.remove('show');
+  document.getElementById('auth-ok').classList.remove('show');
+  document.getElementById('auth-email').value='';
+  document.getElementById('auth-password').value='';
+  render();
+}
+
+async function refreshToken(){
+  const refresh = localStorage.getItem('ft_refresh');
+  if(!refresh) return false;
+  try {
+    const r = await fetch(`${SB_URL}/auth/v1/token?grant_type=refresh_token`,{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({refresh_token:refresh})
+    });
+    if(!r.ok) return false;
+    const data = await r.json();
+    userToken = data.access_token;
+    currentUser = data.user;
+    localStorage.setItem('ft_token', data.access_token);
+    localStorage.setItem('ft_refresh', data.refresh_token||refresh);
+    localStorage.setItem('ft_user', JSON.stringify(data.user));
+    return true;
+  } catch(e){ return false; }
+}
+
+function showForgotPassword(){
+  const email = document.getElementById('auth-email').value.trim();
+  if(!email){showAuthError('Masukkan email dulu untuk reset password.');return;}
+  fetch(`${SB_URL}/auth/v1/recover`,{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({email})
+  }).then(()=>{
+    showAuthOk('✓ Email reset password sudah dikirim ke '+email);
+  }).catch(()=>{showAuthError('Gagal kirim email reset.');});
+}
+
+// ===== CHECK SESSION ON LOAD =====
+async function checkSession(){
+  const savedToken = localStorage.getItem('ft_token');
+  const savedUser = localStorage.getItem('ft_user');
+  if(savedToken && savedUser){
+    userToken = savedToken;
+    currentUser = JSON.parse(savedUser);
+    // Verify token still valid
+    const r = await fetch(`${SB_URL}/auth/v1/user`,{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+savedToken}
+    });
+    if(r.ok){
+      currentUser = await r.json();
+      updateUserUI();
+      document.getElementById('auth-screen').classList.remove('show');
+      return true;
+    } else {
+      // Try refresh
+      const ok = await refreshToken();
+      if(ok){
+        updateUserUI();
+        document.getElementById('auth-screen').classList.remove('show');
+        return true;
+      }
+    }
+  }
+  // Show login
+  document.getElementById('auth-screen').classList.add('show');
+  return false;
+}
+
 
 // Simple REST helpers
 async function sbSelect(table){
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?select=*&order=updated_at.desc`, {headers: SB_HEADERS});
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?select=*&order=updated_at.desc`, {headers: getSBHeaders()});
   if(!r.ok){ const t=await r.text(); throw new Error(`${table}: ${r.status} ${t}`); }
   return r.json();
 }
 async function sbUpsert(table, row){
   const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
     method: 'POST',
-    headers: {...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates,return=minimal'},
+    headers: {...getSBHeaders(), 'Prefer': 'resolution=merge-duplicates,return=minimal'},
     body: JSON.stringify(row)
   });
   if(!r.ok){ const t=await r.text(); throw new Error(`${table} upsert: ${r.status} ${t}`); }
 }
 async function sbDelete(table, id){
   const r = await fetch(`${SB_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, {
-    method: 'DELETE', headers: SB_HEADERS
+    method: 'DELETE', headers: getSBHeaders()
   });
   if(!r.ok){ const t=await r.text(); throw new Error(`${table} delete: ${r.status} ${t}`); }
 }
@@ -1310,8 +1624,28 @@ function filterTx(f,btn){txFilter=f;document.querySelectorAll('#tx-filter-row .c
 function txHTML(t){
   const acc=t.accountId?(accounts.find(a=>a.id===t.accountId)||{}).name||'':'';
   const meta=[t.cat,acc?'🏦 '+acc:null,t.note].filter(Boolean).join(' · ');
+  // Map category to lucide icon path
+  const catIcons={
+    Gaji:'<path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="2"/>',
+    Freelance:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+    Trading:'<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+    Investasi:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+    Hadiah:'<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>',
+    Makanan:'<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>',
+    Transport:'<path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v9a2 2 0 0 1-2 2h-2"/><circle cx="9" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>',
+    Belanja:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+    Hiburan:'<circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>',
+    Tagihan:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+    Cicilan:'<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
+    Kesehatan:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+    Pendidikan:'<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>',
+    Lainnya:'<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>',
+  };
+  const iconPath = catIcons[t.cat]||catIcons.Lainnya;
+  const iconColor = t.type==='income'?'var(--green)':'var(--red)';
+  const iconBg = t.type==='income'?'var(--green-bg)':'var(--red-bg)';
   return `<div class="tx-item">
-    <div class="tx-icon ${t.type}">${EMO[t.cat]||'💰'}</div>
+    <div class="tx-avatar ${t.type}" style="color:${iconColor}"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;stroke-width:1.75;fill:none;stroke-linecap:round;stroke-linejoin:round;">${iconPath}</svg></div>
     <div class="tx-info"><div class="tx-name">${t.desc}</div><div class="tx-meta">${meta}</div></div>
     <div class="tx-right"><div class="tx-amount ${t.type}">${t.type==='income'?'+':'−'}${fmt(t.amount)}</div><div class="tx-date">${fmtDate(t.date)}</div></div>
     <div class="row-actions">
@@ -1731,9 +2065,44 @@ function renderTradingStats(){
   if(pc)pairChart=new Chart(pc.getContext('2d'),{type:'bar',data:{labels:pN,datasets:[{label:'Win',data:pN.map(p=>pairs[p].w),backgroundColor:'rgba(72,187,120,.7)',borderRadius:4,borderSkipped:false},{label:'Loss',data:pN.map(p=>pairs[p].l),backgroundColor:'rgba(229,62,62,.6)',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#b8a87a',font:{family:'Poppins',size:10}}}},scales:{x:{grid:{color:'rgba(212,175,55,0.06)'},ticks:{color:'#6b6040'}},y:{grid:{color:'rgba(212,175,55,0.06)'},ticks:{color:'#6b6040',stepSize:1}}}}});
   const ps=document.getElementById('pair-stats');
   if(!pN.length){ps.innerHTML='<div class="empty">Belum ada trade tertutup</div>';return;}
-  ps.innerHTML=`<table class="pair-table"><thead><tr><th>Pair</th><th>Total</th><th>Win</th><th>Loss</th><th>Win Rate</th><th>Net P&L (USD)</th></tr></thead><tbody>
-    ${pN.map(p=>{const{w,l,pnl}=pairs[p];const wr2=Math.round(w/(w+l)*100);return`<tr><td style="font-weight:600;color:var(--gold2)">${p}</td><td>${w+l}</td><td style="color:var(--green)">${w}</td><td style="color:var(--red2)">${l}</td><td>${wr2}%</td><td class="${pnl>=0?'pnl-pos':'pnl-neg'}">${pnl>=0?'+':''}$${Math.abs(pnl).toFixed(2)}</td></tr>`;}).join('')}
-  </tbody></table>`;
+  ps.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+    ${pN.map(p=>{
+      const{w,l,pnl}=pairs[p];
+      const total=w+l;
+      const wr=Math.round(w/total*100);
+      const pnlColor=pnl>=0?'var(--green)':'var(--red)';
+      const wrColor=wr>=60?'var(--green)':wr>=40?'var(--amber)':'var(--red)';
+      return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-size:14px;font-weight:700;">${p}</span>
+          <span style="font-size:11px;color:var(--text3);background:var(--bg);padding:2px 8px;border-radius:20px;border:1px solid var(--border);">${total} trades</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div style="background:var(--green-bg);border-radius:var(--radius-xs);padding:8px 10px;">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Win</div>
+            <div style="font-size:18px;font-weight:700;color:var(--green)">${w}</div>
+          </div>
+          <div style="background:var(--red-bg);border-radius:var(--radius-xs);padding:8px 10px;">
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Loss</div>
+            <div style="font-size:18px;font-weight:700;color:var(--red)">${l}</div>
+          </div>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <span style="font-size:11px;color:var(--text3);">Win Rate</span>
+            <span style="font-size:12px;font-weight:700;color:${wrColor};">${wr}%</span>
+          </div>
+          <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+            <div style="width:${wr}%;height:100%;background:${wrColor};border-radius:3px;"></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border);">
+          <span style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Net P&L</span>
+          <span style="font-size:15px;font-weight:700;color:${pnlColor};">${pnl>=0?'+':''}$${Math.abs(pnl).toFixed(2)}</span>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 // ===== DASHBOARD =====
@@ -1963,14 +2332,110 @@ function setClass(id, cls){ const el=document.getElementById(id); if(el) el.clas
 function setHTML(id, val){ const el=document.getElementById(id); if(el) el.innerHTML=val; }
 
 // ===== BANK CARD UPDATE =====
+// ===== BANK CARD CAROUSEL =====
+let cardIdx = 0;
+const CARD_THEMES = ['atm-card-0','atm-card-1','atm-card-2','atm-card-3'];
+
 function updateBankCard(){
-  const total=accounts.reduce((a,ac)=>a+ac.balance,0);
-  const first=accounts[0];
-  setText('bc-bank-name', first?first.name:'Add your account');
-  setText('bc-num', first?first.name.toUpperCase().padEnd(20,'·').slice(0,20):'•••• •••• •••• ••••');
-  setText('bc-balance', fmt(total));
-  setText('bc-acc-count', accounts.length);
+  const carousel = document.getElementById('cardCarousel');
+  const dotsEl = document.getElementById('cardDots');
+  if(!carousel||!dotsEl) return;
+
+  // Remove all existing cards
+  carousel.innerHTML = '';
+  dotsEl.innerHTML = '';
+
+  if(!accounts.length){
+    // Empty state
+    carousel.innerHTML = `<div class="atm-card atm-card-0 active">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;position:relative;z-index:1;">
+        <div><div class="atm-bank-label">Bank Name</div><div class="atm-bank-name">No Account Yet</div></div>
+        <div class="atm-chip"></div>
+      </div>
+      <div class="atm-num" style="position:relative;z-index:1;">•••• •••• •••• ••••</div>
+      <div class="atm-footer" style="position:relative;z-index:1;">
+        <div><div class="atm-bal-label">Balance</div><div class="atm-bal-amount">Rp 0</div><div class="atm-bal-sub">Add your first account</div></div>
+      </div>
+    </div>`;
+    cardIdx = 0;
+    return;
+  }
+
+  // Render each account as a card
+  accounts.forEach((acc, i) => {
+    const theme = CARD_THEMES[i % CARD_THEMES.length];
+    let cls = 'atm-card '+theme;
+    if(i === cardIdx) cls += ' active';
+    else if(i === cardIdx+1 || (cardIdx===accounts.length-1 && i===0)) cls += ' prev';
+    else if(i === cardIdx+2 || (cardIdx>=accounts.length-2 && i<=1)) cls += ' prev2';
+    else cls += ' hidden';
+
+    const numDisplay = acc.name.toUpperCase().replace(/(.{4})/g,'$1 ').trim().slice(0,24);
+
+    const card = document.createElement('div');
+    card.className = cls;
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;position:relative;z-index:1;">
+        <div>
+          <div class="atm-bank-label">Account</div>
+          <div class="atm-bank-name">${acc.name}</div>
+        </div>
+        <div class="atm-chip"></div>
+      </div>
+      <div class="atm-num" style="position:relative;z-index:1;">${numDisplay.padEnd(19,'·').slice(0,19)}</div>
+      <div class="atm-footer" style="position:relative;z-index:1;">
+        <div>
+          <div class="atm-bal-label">Your Balance</div>
+          <div class="atm-bal-amount">${fmt(acc.balance)}</div>
+          <div class="atm-bal-sub">${acc.desc||'Rekening tabungan'}</div>
+        </div>
+        <div class="atm-status">
+          <div class="atm-status-label">Status</div>
+          <div class="atm-status-val active-s">Active</div>
+        </div>
+      </div>`;
+    card.onclick = () => goCard(i);
+    carousel.appendChild(card);
+
+    // Dot
+    const dot = document.createElement('div');
+    dot.className = 'card-dot' + (i===cardIdx?' active':'');
+    dot.onclick = () => goCard(i);
+    dotsEl.appendChild(dot);
+  });
 }
+
+function goCard(idx){
+  if(!accounts.length) return;
+  cardIdx = ((idx % accounts.length) + accounts.length) % accounts.length;
+  const cards = document.querySelectorAll('#cardCarousel .atm-card');
+  const dots = document.querySelectorAll('#cardDots .card-dot');
+  cards.forEach((c,i)=>{
+    c.className = c.className.replace(/\b(active|prev|prev2|hidden)\b/g,'').trim();
+    const diff = (i - cardIdx + accounts.length) % accounts.length;
+    if(diff===0) c.classList.add('active');
+    else if(diff===1) c.classList.add('prev');
+    else if(diff===2) c.classList.add('prev2');
+    else c.classList.add('hidden');
+  });
+  dots.forEach((d,i)=>{ d.classList.toggle('active', i===cardIdx); });
+}
+function nextCard(){ goCard(cardIdx+1); }
+function prevCard(){ goCard(cardIdx-1); }
+
+// Swipe support
+(function(){
+  let startX=0;
+  document.addEventListener('touchstart',e=>{
+    if(e.target.closest('#cardCarousel')) startX=e.touches[0].clientX;
+  },{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(e.target.closest('#cardCarousel')){
+      const diff=startX-e.changedTouches[0].clientX;
+      if(Math.abs(diff)>40){ diff>0?nextCard():prevCard(); }
+    }
+  },{passive:true});
+})();
 
 // switchView helper for HTML onclick
 function switchView(v){
@@ -2027,7 +2492,10 @@ updateMonth();
 const initBtn=document.getElementById('mainBtn');
 if(initBtn)initBtn.setAttribute('data-action',"openModal('tx')");
 render();
-pullFromSupabase();
+// Check auth session first
+checkSession().then(loggedIn => {
+  if(loggedIn) pullFromSupabase();
+});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" onload="render()"></script>
 </body>
