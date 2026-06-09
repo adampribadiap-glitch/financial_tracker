@@ -1996,9 +1996,6 @@ document.addEventListener('click',function(e){
   if(el)el.addEventListener('click',e=>{if(e.target.id===id)e.target.classList.remove('open');});
 });
 
-// Mobile nav active sync with switchView
-const _origSwitchView=switchView;
-
 // Init
 updateMonth();
 const initBtn=document.getElementById('mainBtn');
