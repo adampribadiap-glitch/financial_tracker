@@ -867,7 +867,13 @@ async function pullFromSupabase(){
     render();
   } catch(e) {
     console.error('Supabase pull error:', e);
-    showSyncStatus('⚠ ' + e.message, 'error');
+    const msg = '⚠ Sync gagal: ' + e.message;
+    showSyncStatus(msg, 'error');
+    // Show alert on first error so user sees it
+    if(!window._syncErrorShown){
+      window._syncErrorShown = true;
+      alert('Supabase Error:\n' + e.message + '\n\nCek Console untuk detail.');
+    }
   }
 }
 
@@ -1681,8 +1687,22 @@ function importData(e){
 updateMonth();
 const initMainBtn=document.getElementById('mainBtn');
 if(initMainBtn)initMainBtn.setAttribute('data-action',"openModal('tx')");
+
+// Add sync button to topbar
+(function(){
+  const tr=document.querySelector('.topbar-right');
+  if(tr){
+    const btn=document.createElement('button');
+    btn.className='btn btn-ghost';
+    btn.id='syncBtn';
+    btn.style.fontSize='12px';
+    btn.textContent='⟳ Sync';
+    btn.onclick=function(){pullFromSupabase();};
+    tr.insertBefore(btn, tr.firstChild);
+  }
+})();
+
 render();
-// Pull from Supabase on load (async, will re-render when done)
 pullFromSupabase();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" onload="render()"></script>
