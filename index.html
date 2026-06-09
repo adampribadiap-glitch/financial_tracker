@@ -1240,8 +1240,8 @@ let depositHistory=ld('ft4_deposits',[]);
 // ===== PULL FROM SUPABASE =====
 async function pullFromSupabase(){
   const btn=document.getElementById('syncBtn');
-  if(btn)btn.textContent='⟳ Syncing...';
-  showSyncStatus('⟳ Menyinkronkan...', 'info');
+  if(btn){btn.textContent='⟳ Syncing...';btn.disabled=true;}
+  showSyncStatus('⟳ Mengambil data dari cloud...', 'info');
   try {
     const [txRes, accRes, goalRes, tradeRes, wdRes, depRes, budRes] = await Promise.all([
       sbSelect('transactions'),
@@ -1253,54 +1253,29 @@ async function pullFromSupabase(){
       sbSelect('budgets'),
     ]);
 
-    // Only overwrite local if Supabase has data
-    // If Supabase is empty but local has data → push local to Supabase instead
-    const sbTx   = txRes.map(r=>r.data).filter(Boolean);
-    const sbAcc  = accRes.map(r=>r.data).filter(Boolean);
-    const sbGoal = goalRes.map(r=>r.data).filter(Boolean);
-    const sbTrade= tradeRes.map(r=>r.data).filter(Boolean);
-    const sbWd   = wdRes.map(r=>r.data).filter(Boolean);
-    const sbDep  = depRes.map(r=>r.data).filter(Boolean);
-    const sbBud  = budRes.length>0 && budRes[0].data ? budRes[0].data : null;
+    // Always overwrite local with cloud data (cloud is source of truth)
+    transactions   = txRes.map(r=>r.data).filter(Boolean);
+    accounts       = accRes.map(r=>r.data).filter(Boolean);
+    goals          = goalRes.map(r=>r.data).filter(Boolean);
+    trades         = tradeRes.map(r=>r.data).filter(Boolean);
+    wdHistory      = wdRes.map(r=>r.data).filter(Boolean);
+    depositHistory = depRes.map(r=>r.data).filter(Boolean);
+    if(budRes.length>0 && budRes[0].data) budgets = budRes[0].data;
 
-    const sbHasData = sbTx.length>0||sbAcc.length>0||sbGoal.length>0||sbTrade.length>0||sbWd.length>0||sbDep.length>0||sbBud!==null;
-    const localHasData = transactions.length>0||accounts.length>0||goals.length>0||trades.length>0||wdHistory.length>0||depositHistory.length>0;
+    // Update local cache
+    sv('ft4_tx',transactions);
+    sv('ft4_accounts',accounts);
+    sv('ft4_goals',goals);
+    sv('ft4_trades',trades);
+    sv('ft4_wd',wdHistory);
+    sv('ft4_deposits',depositHistory);
+    sv('ft4_budgets',budgets);
 
-    if(sbHasData){
-      // Merge: only replace local if Supabase has data for that table
-      if(sbTx.length>0)   { transactions   = sbTx;   sv('ft4_tx',transactions); }
-      if(sbAcc.length>0)  { accounts       = sbAcc;  sv('ft4_accounts',accounts); }
-      if(sbGoal.length>0) { goals          = sbGoal; sv('ft4_goals',goals); }
-      if(sbTrade.length>0){ trades         = sbTrade; sv('ft4_trades',trades); }
-      if(sbWd.length>0)   { wdHistory      = sbWd;   sv('ft4_wd',wdHistory); }
-      if(sbDep.length>0)  { depositHistory = sbDep;  sv('ft4_deposits',depositHistory); }
-      if(sbBud)           { budgets        = sbBud;  sv('ft4_budgets',budgets); }
-
-      // Push any local data that Supabase doesn't have yet
-      const needPush = (sbTx.length===0&&transactions.length>0)||
-                       (sbAcc.length===0&&accounts.length>0)||
-                       (sbGoal.length===0&&goals.length>0)||
-                       (sbTrade.length===0&&trades.length>0)||
-                       (sbWd.length===0&&wdHistory.length>0)||
-                       (sbDep.length===0&&depositHistory.length>0);
-      if(needPush){
-        showSyncStatus('⟳ Upload data yang belum sync...', 'saving');
-        await pushAllToSupabase();
-      }
-      showSyncStatus('✓ Tersinkron dari cloud', 'ok');
-    } else if(localHasData){
-      // Supabase empty but local has data → push local up
-      showSyncStatus('⟳ Upload data lokal...', 'saving');
-      await pushAllToSupabase();
-      showSyncStatus('✓ Data lokal berhasil diupload', 'ok');
-    } else {
-      showSyncStatus('✓ Tersinkron (kosong)', 'ok');
-    }
-
-    if(btn)btn.textContent='⟳ Sync';
+    if(btn){btn.textContent='⟳ Sync';btn.disabled=false;}
+    showSyncStatus('✓ Data dari cloud berhasil dimuat', 'ok');
     render();
   } catch(e) {
-    if(btn)btn.textContent='⟳ Sync';
+    if(btn){btn.textContent='⟳ Sync';btn.disabled=false;}
     console.error('Supabase pull error:', e);
     showSyncStatus('⚠ ' + e.message, 'error');
     if(!window._syncErrorShown){
@@ -2508,12 +2483,20 @@ function prevCard(){ goCard(cardIdx-1); }
   },{passive:true});
 })();
 
+// Clear old/stale localStorage cache on load to prevent data accumulation
+(function clearStaleCache(){
+  // Remove old format keys that might conflict
+  ['ft_tx','ft_budgets','ft_accounts','ft_goals','ft_trades','ft_wd','ft_deposits',
+   'ft2_tx','ft2_accounts','ft3_tx','ft3_accounts'].forEach(k=>localStorage.removeItem(k));
+})();
+
 // Init
 updateMonth();
 const initBtn=document.getElementById('mainBtn');
 if(initBtn)initBtn.setAttribute('data-action',"openModal('tx')");
 render();
-// Check auth session first
+
+// Check auth session — run after DOM ready
 checkSession().then(loggedIn => {
   if(loggedIn) pullFromSupabase();
 });
