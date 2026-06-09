@@ -931,6 +931,7 @@ const CARD_THEMES=['atm-card-0','atm-card-1','atm-card-2','atm-card-3'];
 // ===== STATE =====
 let currentView='dashboard',currentType='income',txFilter='all',tradeFilter='all',flowFilter='all';
 let cDate=new Date();
+let cardIdx=0;
 let cMonth=cDate.getMonth();   // 0-indexed, local
 let cYear=cDate.getFullYear(); // local
 let activeSavId=null,activeSavType=null,editingTxId=null,editingTradeId=null,editingDepId=null,editingWdId=null;
@@ -952,7 +953,23 @@ function getSBHeaders(){
   };
 }
 
-// ===== AUTH FUNCTIONS =====
+// Category SVG icons (Lucide line style)
+const CAT_ICONS={
+  Makanan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
+  Transport:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>',
+  Belanja:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+  Hiburan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
+  Tagihan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+  Cicilan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+  Kesehatan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+  Pendidikan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+  Lainnya:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+  Gaji:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  Freelance:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+  Trading:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>',
+  Investasi:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+  Hadiah:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>',
+};
 let authMode = 'login';
 
 function switchAuthTab(mode){
@@ -1534,7 +1551,7 @@ function setType(t){
   currentType=t;
   document.getElementById('btn-income').classList.toggle('active',t==='income');
   document.getElementById('btn-expense').classList.toggle('active',t==='expense');
-  document.getElementById('tx-cat').innerHTML=(t==='income'?CATS_INC:CATS_EXP).map(c=>`<option value="${c}">${EMO[c]} ${c}</option>`).join('');
+  document.getElementById('tx-cat').innerHTML=(t==='income'?CATS_INC:CATS_EXP).map(c=>`<option value="${c}">${c}</option>`).join('');
 }
 
 // ===== TRADE CALC =====
@@ -1962,13 +1979,13 @@ function renderBudget(txM){
   const inp=document.getElementById('budget-inputs');
   const listEl=document.getElementById('budget-list');
   if(!inp||!listEl) return;
-  inp.innerHTML=CATS_EXP.map(c=>`<div class="form-group" style="margin:0"><label>${EMO[c]||''} ${c}</label><input type="number" id="budget-${c}" value="${budgets[c]||0}"></div>`).join('');
+  inp.innerHTML=CATS_EXP.map(c=>`<div class="form-group" style="margin:0"><label style="display:flex;align-items:center;gap:6px;color:var(--text3)">${CAT_ICONS[c]||''} ${c}</label><input type="number" id="budget-${c}" value="${budgets[c]||0}"></div>`).join('');
   const catExp={};txM.filter(t=>t.type==='expense').forEach(t=>{catExp[t.cat]=(catExp[t.cat]||0)+t.amount;});
   listEl.innerHTML=CATS_EXP.map(c=>{
     const spent=catExp[c]||0,limit=budgets[c]||0;
     const pct=limit>0?Math.min(100,Math.round(spent/limit*100)):0;
     const col=pct>90?'var(--red)':pct>70?'var(--amber)':'var(--blue2)';
-    return `<div class="budget-card"><div class="budget-top"><span class="budget-name">${EMO[c]||''} ${c}</span><span class="budget-pct" style="color:${col}">${pct}%</span></div><div class="progress"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div><div class="budget-nums"><span>${fmt(spent)}</span><span>${fmt(limit)}</span></div></div>`;
+    return `<div class="budget-card"><div class="budget-top"><span class="budget-name" style="display:flex;align-items:center;gap:7px;">${CAT_ICONS[c]||''} ${c}</span><span class="budget-pct" style="color:${col}">${pct}%</span></div><div class="progress"><div class="progress-fill" style="width:${pct}%;background:${col}"></div></div><div class="budget-nums"><span>${fmt(spent)}</span><span>${fmt(limit)}</span></div></div>`;
   }).join('');
 }
 function saveBudgets(){
@@ -2349,7 +2366,6 @@ function setHTML(id, val){ const el=document.getElementById(id); if(el) el.inner
 
 // ===== BANK CARD UPDATE =====
 // ===== BANK CARD CAROUSEL =====
-let cardIdx = 0;
 
 function updateBankCard(){
   const carousel = document.getElementById('cardCarousel');
@@ -2451,56 +2467,6 @@ function prevCard(){ goCard(cardIdx-1); }
     }
   },{passive:true});
 })();
-
-// switchView helper for HTML onclick
-function switchView(v){
-  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.bn-item').forEach(x=>x.classList.remove('active'));
-  const viewEl=document.getElementById('view-'+v);
-  if(viewEl)viewEl.classList.add('active');
-  document.querySelectorAll('[data-view="'+v+'"]').forEach(el=>el.classList.add('active'));
-  currentView=v;
-  const m=VM[v];
-  if(m){
-    document.getElementById('pageTitle')&&(setText('pageTitle', m.title));
-    document.getElementById('pageSub')&&(setText('pageSub', m.sub));
-    const b=document.getElementById('mainBtn');
-    if(b){b.textContent=m.btn;b.setAttribute('data-action',m.act);}
-  }
-  render();
-}
-
-// Central click handler
-document.addEventListener('click',function(e){
-  const dvEl=e.target.closest('[data-view]');
-  if(dvEl&&!dvEl.closest('.profile-menu')){
-    const v=dvEl.getAttribute('data-view');
-    switchView(v);
-    if(dvEl.getAttribute('data-closemenu')){
-      const mm=document.getElementById('mobile-menu');
-      if(mm)mm.classList.remove('open');
-    }
-    return;
-  }
-  if(e.target.id==='mainBtn'||e.target.closest('#mainBtn')){
-    const act=(e.target.closest('#mainBtn')||e.target).getAttribute('data-action')||"openModal('tx')";
-    try{eval(act);}catch(err){openModal('tx');}
-    return;
-  }
-  if(e.target.id==='menuBtn'||e.target.closest('#menuBtn')){
-    document.getElementById('mobile-menu').classList.add('open');return;
-  }
-  if(e.target.id==='menuCloseBtn'){document.getElementById('mobile-menu').classList.remove('open');return;}
-  if(e.target.id==='mobileExportBtn'){exportData();document.getElementById('mobile-menu').classList.remove('open');return;}
-  if(e.target.id==='mobileImportBtn'){document.getElementById('import-input').click();document.getElementById('mobile-menu').classList.remove('open');return;}
-  if(e.target.classList.contains('modal-bg')){e.target.classList.remove('open');return;}
-});
-
-['modal-tx','modal-trade','modal-deposit','modal-wd','modal-savings','mobile-menu'].forEach(id=>{
-  const el=document.getElementById(id);
-  if(el)el.addEventListener('click',e=>{if(e.target.id===id)e.target.classList.remove('open');});
-});
 
 // Init
 updateMonth();
